@@ -112,7 +112,7 @@ class CrprospectController extends Controller
     {
 
         $validator = $request->validate([
-            'ao_id' => 'required|string',
+            'id' => 'required|string',
             'visit_date' => 'required|date',
             'tujuan_kredit' => 'required|string',
             'jenis_produk' => 'required|string',
@@ -126,9 +126,9 @@ class CrprospectController extends Controller
             'hp' => 'required|numeric',
             'usaha' => 'required|string',
             'sector' => 'required|string',
-            'coordinate' => 'required|string',
-            'accurate' => 'required|string',
-            'slik' => 'required|string',
+            // 'coordinate' => 'string',
+            // 'accurate' => 'string',
+            'slik' => 'required|numeric',
             'collateral_value' => 'numeric'
         ]);
 
@@ -142,16 +142,12 @@ class CrprospectController extends Controller
             $this->_validate($request);
     
             $crProspek = $this->createCrProspek($request);
-
-            if (!is_array($request->prospek_jaminan) || !is_array($request->prospek_person) ) {
-                return response()->json(['error' => 'Prospek must be an array'], 400);
-            }
     
-            if ($request->has('prospek_jaminan')) {
+            if ($request->has('jaminan') && is_array($request->jaminan)) {
                 $this->createCrProspekCol($request, $crProspek);
             }
 
-            if ($request->has('prospek_person')) {
+            if ($request->has('penjamin') && is_array($request->penjamin)) {
                 $this->createCrProspekPerson($request, $crProspek);
             }
     
@@ -171,11 +167,9 @@ class CrprospectController extends Controller
     
     private function createCrProspek(Request $request)
     {
-        $uuid_crProspek = Uuid::uuid4()->toString();
-    
         $data_array = [
-            'id' => $uuid_crProspek,
-            'ao_id' => $request->ao_id,
+            'id' => $request->id,
+            'ao_id' => $request->user()->id,
             'visit_date' => $request->visit_date,
             'tujuan_kredit' => $request->tujuan_kredit,
             'jenis_produk' => $request->jenis_produk,
@@ -199,7 +193,7 @@ class CrprospectController extends Controller
     
     private function createCrProspekCol(Request $request, $crProspek)
     {
-        foreach ($request->prospek_jaminan as $result) {
+        foreach ($request->jaminan as $result) {
 
             $data_array_col = [
                 'id' => Uuid::uuid4()->toString(),
@@ -216,16 +210,16 @@ class CrprospectController extends Controller
     
     private function createCrProspekPerson(Request $request, $crProspek)
     {
-        foreach ($request->prospek_person as $result) {
+        foreach ($request->penjamin as $result) {
 
             $data_array_person = [
                 'id' => Uuid::uuid4()->toString(),
                 'cr_prospect_id' => $crProspek->id,
-                'nama' => $result['nama_jaminan'] ?? '',
-                'ktp' => $result['ktp_jaminan'] ?? '',
-                'tgl_lahir' => $result['tgl_lahir_jaminan'] ?? null,
-                'pekerjaan' => $result['pekerjaan_jaminan'] ?? '',
-                'status' => $result['status_jaminan'] ?? ''
+                'nama' => $result['nama'] ?? '',
+                'ktp' => $result['ktp'] ?? '',
+                'tgl_lahir' => $result['tgl_lahir'] ?? null,
+                'pekerjaan' => $result['pekerjaan'] ?? '',
+                'status' => $result['status'] ?? ''
             ];
         
             M_CrProspectPerson::create($data_array_person);
@@ -294,11 +288,17 @@ class CrprospectController extends Controller
             DB::beginTransaction();
 
             $this->validate($req, [
-                'image' => 'required|image|mimes:jpg,png,jpeg,gif,svg|max:2048',
+                'image' => 'required|image|mimes:jpg,png,jpeg,gif,svg',
                 'cr_prospect_id' =>'required|string'
             ]);
 
-            $image_path = $req->file('')->store('public');
+            $check = M_CrProspect::where('id',$req->cr_prospect_id)->first();
+            
+            if (empty($check)) {
+                return response()->json(['message' => 'Cr Prospect Id Not Found',"status" => 404,'response' =>''], 404);
+            }
+
+            $image_path = $req->file('image')->store('Cr_Prospect');
 
             $data_array_attachment = [
                 'id' => Uuid::uuid4()->toString(),
@@ -309,36 +309,16 @@ class CrprospectController extends Controller
             M_CrProspectAttachment::create($data_array_attachment);
 
             DB::commit();
-            // ActivityLogger::logActivity($req);
-            return response()->json(['message' => 'Image upload successfully',"status" => 200,'response' => $image_path], 200);
+            ActivityLogger::logActivity($req,"Success",200);
+            return response()->json(['message' => 'Image upload successfully',"status" => 200,'response' =>'http://192.168.1.9:9000/storage/'. $image_path], 200);
         } catch (QueryException $e) {
             DB::rollback();
-            // ActivityLogger::logActivityError($req,$e->getMessage());
+            ActivityLogger::logActivity($req,$e->getMessage(),409);
             return response()->json(['message' => $e->getMessage(),"status" => 409], 409);
         } catch (\Exception $e) {
             DB::rollback();
-            // ActivityLogger::logActivityError($req,$e->getMessage());
+            ActivityLogger::logActivity($req,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         } 
-    }
-
-    public function showImage()
-    {
-        $strge = Storage::disk('public');
-        $get_strge = Storage::url('j5QCxBc6qh1asfKQ3zpjXZVjAx10Y3UkBnvFDaoW.png');
-        $url = asset($get_strge);
-        $kk = storage_path('app/public') . '/image/j5QCxBc6qh1asfKQ3zpjXZVjAx10Y3UkBnvFDaoW.png';
-
-        $imageContent = file_get_contents($kk);
-
-        $image = 'j5QCxBc6qh1asfKQ3zpjXZVjAx10Y3UkBnvFDaoW.png';
-
-        if ($strge->exists('j5QCxBc6qh1asfKQ3zpjXZVjAx10Y3UkBnvFDaoW.png')) {
-            return asset('storage/' . $image);
-        }else {
-            return 'Not Found Image In Folder';
-        }
-
-
     }
 }

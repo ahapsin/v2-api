@@ -30,7 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('kunjungan', [CrprospectController::class, 'store']);
     Route::put('kunjungan/{id}', [CrprospectController::class, 'update']);
     Route::delete('kunjungan/{id}', [CrprospectController::class, 'destroy']);
-    Route::post('kunjunganImageUpload', [CrprospectController::class, 'uploadImage']);
+    Route::post('image_upload_prospect', [CrprospectController::class, 'uploadImage']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
