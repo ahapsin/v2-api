@@ -32,7 +32,23 @@ class MasterMenuController extends Controller
                         'submenu' => []
                     ]
                 ];
-            } 
+            }
+        }
+
+        foreach ($menuItems as $menuItem) {
+            if (!isset($menuArray[$menuItem['parent']])) {
+                $menuArray[$menuItem['id']] = [
+                    'menuid' => $menuItem['id'],
+                    'menuitem' => [
+                        'labelmenu' => $menuItem['menu_name'],
+                        'routename' => $menuItem['route'],
+                        'leading' => explode(',', $menuItem['leading']),
+                        'action' => $menuItem['action'],
+                        'ability' => $menuItem['ability'],
+                        'submenu' => []
+                    ]
+                ];
+            }
         }
 
         foreach ($menuItems as $menuItem) {
@@ -46,7 +62,7 @@ class MasterMenuController extends Controller
                     'ability' => $menuItem['ability']
                 ];
             }
-        }
+        }   
 
         return array_values($menuArray);
     }
