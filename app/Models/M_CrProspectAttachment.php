@@ -13,12 +13,14 @@ class M_CrProspectAttachment extends Model
     protected $fillable = [
         'id',
         'cr_prospect_id',
+        'type',
         'attachment_path'
     ];
     protected $guarded = [];
     public $incrementing = false;
     protected $keyType = 'string';
     protected $primaryKey = 'id';
+    public $timestamps = false;
     protected static function boot()
     {
         parent::boot();

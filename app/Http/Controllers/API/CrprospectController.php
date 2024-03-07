@@ -289,20 +289,22 @@ class CrprospectController extends Controller
 
             $this->validate($req, [
                 'image' => 'required|image|mimes:jpg,png,jpeg,gif,svg',
+                'type' => 'required|string',
                 'cr_prospect_id' =>'required|string'
             ]);
 
-            $check = M_CrProspect::where('id',$req->cr_prospect_id)->first();
+            // $check = M_CrProspect::where('id',$req->cr_prospect_id)->first();
             
-            if (empty($check)) {
-                return response()->json(['message' => 'Cr Prospect Id Not Found',"status" => 404,'response' =>''], 404);
-            }
+            // if (empty($check)) {
+            //     return response()->json(['message' => 'Cr Prospect Id Not Found',"status" => 404,'response' =>''], 404);
+            // }
 
             $image_path = $req->file('image')->store('Cr_Prospect');
 
             $data_array_attachment = [
                 'id' => Uuid::uuid4()->toString(),
                 'cr_prospect_id' => $req->cr_prospect_id,
+                'type' => $req->type,
                 'attachment_path' => $image_path ?? ''
             ];
 
