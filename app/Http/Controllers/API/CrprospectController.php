@@ -323,4 +323,44 @@ class CrprospectController extends Controller
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         } 
     }
+
+    public function multiImage(Request $req)
+    {
+        try {
+            DB::beginTransaction();
+
+            $this->validate($req, [
+                // 'images[]' => 'required|image|mimes:jpg,png,jpeg,gif,svg',
+                'type' => 'required|string',
+                'cr_prospect_id' =>'required|string'
+            ]);
+
+            $get_request = $req->file('images');
+
+            foreach ($get_request as $list) {
+                $image_path = $list->store('Cr_Prospect');
+
+                $data_array_attachment = [
+                    'id' => Uuid::uuid4()->toString(),
+                    'cr_prospect_id' => $req->cr_prospect_id,
+                    'type' => $req->type,
+                    'attachment_path' => $image_path ?? ''
+                ];
+    
+                M_CrProspectAttachment::create($data_array_attachment);      
+            }
+
+            DB::commit();
+            ActivityLogger::logActivity($req,"Success",200);
+            return response()->json(['message' => 'Image upload successfully',"status" => 200,'response' =>'http://192.168.1.9:9000/storage/'. $image_path], 200);
+        } catch (QueryException $e) {
+            DB::rollback();
+            ActivityLogger::logActivity($req,$e->getMessage(),409);
+            return response()->json(['message' => $e->getMessage(),"status" => 409], 409);
+        } catch (\Exception $e) {
+            DB::rollback();
+            ActivityLogger::logActivity($req,$e->getMessage(),500);
+            return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
+        } 
+    }
 }

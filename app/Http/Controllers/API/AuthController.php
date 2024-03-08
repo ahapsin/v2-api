@@ -29,16 +29,30 @@ class AuthController extends Controller
             $credentials = $request->only('username', 'password');
 
             if (Auth::attempt($credentials)) {
-                $token = $request->user()->createToken($request->user()->id)->plainTextToken;
-    
-                ActivityLogger::logActivity($request,"Success",200);
-                return response()->json([
-                    'message' => true,
-                    'status' => 200,
-                    'response' => [
-                        'token' => $token
-                    ],
-                ], 200);
+
+                $user = $request->user();
+
+                if ($user->status == 'Active') {
+
+                    $token = $request->user()->createToken($request->user()->id)->plainTextToken;
+        
+                    ActivityLogger::logActivity($request,"Success",200);
+                    return response()->json([
+                        'message' => true,
+                        'status' => 200,
+                        'response' => [
+                            'token' => $token
+                        ],
+                    ], 200);
+
+                } else {
+                    ActivityLogger::logActivity($request, 'User status is not active'.' ( user = '.$request->username. ' & pass = '.$request->password.')', 403);
+                    return response()->json([
+                        'message' => 'User status is not active',
+                        "status" => 403,
+                        "response" => null
+                    ], 403);
+                }
             }
     
             ActivityLogger::logActivity($request,$message.' ( user = '.$request->username. ' & pass = '.$request->password.')',401);
