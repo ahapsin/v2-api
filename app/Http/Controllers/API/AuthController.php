@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Validator;
 class AuthController extends Controller
 {
 
+    private $login = "Login";
+    private $logout = "Logout";
+
     public function _validate($request)
     {
         $validator = Validator::make($request->all(), [
@@ -36,7 +39,7 @@ class AuthController extends Controller
 
                     $token = $request->user()->createToken($request->user()->id)->plainTextToken;
         
-                    ActivityLogger::logActivity($request,"Success",200);
+                    ActivityLogger::logActivityLogin($request,$this->login,"Success",200);
                     return response()->json([
                         'message' => true,
                         'status' => 200,
@@ -46,43 +49,59 @@ class AuthController extends Controller
                     ], 200);
 
                 } else {
-                    ActivityLogger::logActivity($request, 'User status is not active'.' ( user = '.$request->username. ' & pass = '.$request->password.')', 403);
+                    ActivityLogger::logActivityLogin($request,$this->login, 'User status is not active'.' ( user = '.$request->username. ' & pass = '.$request->password.')', 403);
                     return response()->json([
                         'message' => 'User status is not active',
-                        "status" => 403,
-                        "response" => null
+                        "status" => 403
                     ], 403);
                 }
             }
     
-            ActivityLogger::logActivity($request,$message.' ( user = '.$request->username. ' & pass = '.$request->password.')',401);
+            ActivityLogger::logActivityLogin($request,$this->login,$message.' ( user = '.$request->username. ' & pass = '.$request->password.')',401);
 
             return response()->json([
                 'message' => $message,
-                "status" => 401,
-                "response" => $request->all()
+                "status" => 401
             ], 401);
 
         } catch (\Exception $e) {
+            ActivityLogger::logActivityLogin($request,$this->login,$e,500);
             return response()->json([
                 'message' => 'An error occurred',
-                'status' => 500,
-                "response" => $e
+                'status' => 500
             ], 500);
         }
     }
 
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
+        try {
+            $user = $request->user();
 
-        ActivityLogger::logActivity($request,"Success",200);
-        return response()->json([
-            'message' => 'Logout successfully',
-            'status' => 200,
-            "response" => [
-                "token_deleted"=> $request->bearerToken()
-            ]
-        ], 200);
+            if ($user) {
+                $user->tokens()->delete();
+                ActivityLogger::logActivityLogout($request, $this->logout, "Success", 200,$user->username);
+                return response()->json([
+                    'message' => 'Logout successful',
+                    'status' => 200,
+                    "response" => [
+                        "token_deleted" => $request->bearerToken()
+                    ]
+                ], 200);
+            } else {
+                ActivityLogger::logActivityLogout($request, $this->logout, "Token not defined", 404,$user->username);
+                return response()->json([
+                    'message' => 'Token not defined',
+                    'status' => 404
+                ], 404);
+            }
+    
+        } catch (\Exception $e) {
+            ActivityLogger::logActivityLogout($request,$this->logout,$e,500,$user->username);
+            return response()->json([
+                'message' => 'An error occurred',
+                'status' => 500
+            ], 500);
+        }
     }
 }
