@@ -3,28 +3,28 @@
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CreditTypeController;
 use App\Http\Controllers\API\CrprospectController;
+use App\Http\Controllers\API\DetailProfileController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\MasterMenuController;
-use Illuminate\Support\Facades\Storage;
 
 //Login Authenticate
-Route::post('auth/login', [AuthController::class, 'login']);
+Route::post('auth/login', [AuthController::class, 'login'])->name('login');
 Route::post('auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 //Route Group Master Menu
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('menu', [MasterMenuController::class, 'index']);
     Route::post('menu', [MasterMenuController::class, 'store']);
-});
 
-Route::middleware('auth:sanctum')->group(function () {
+    //Detail Profile
+    Route::get('me/{employeeID}', [DetailProfileController::class, 'index']);
+    
+    //Route Group Credit Type
     Route::get('credit_type/{status}', [CreditTypeController::class, 'index']);
     Route::get('credit_type', [CreditTypeController::class, 'index']);
-});
 
-//Route Group Cr Prospek (Kunjungan)
-Route::middleware('auth:sanctum')->group(function () {
+    //Route Group Cr Prospek (Kunjungan)
     Route::get('kunjungan', [CrprospectController::class, 'index']);
     Route::get('kunjungan/detail/{id}', [CrprospectController::class, 'detail']);
     Route::post('kunjungan', [CrprospectController::class, 'store']);
@@ -33,6 +33,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('image_upload_prospect', [CrprospectController::class, 'uploadImage']);
     Route::post('multi-upload-images', [CrprospectController::class, 'multiImage']);
 });
+
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
