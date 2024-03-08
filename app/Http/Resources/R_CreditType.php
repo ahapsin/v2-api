@@ -19,7 +19,7 @@ class R_CreditType extends JsonResource
             'codename' => $this->codename,
             'description' => $this->description,
             'terms' => $this->terms,
-            'image' => $this->image,
+            'image' => $this->image_path,
             'status' => $this->status
         ];
     }
