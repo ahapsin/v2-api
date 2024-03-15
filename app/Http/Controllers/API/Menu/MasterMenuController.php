@@ -85,7 +85,7 @@ class MasterMenuController extends Controller
 
 
     public function store(Request $req)
-    {
+    { 
         try {
             DB::beginTransaction();
             $validator = $this->_validate($req);
