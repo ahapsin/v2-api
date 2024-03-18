@@ -10,17 +10,25 @@ use App\Models\M_CrProspectPerson;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Ramsey\Uuid\Uuid;
 
 class CrprospectController extends Controller
 {
     public function index(Request $req){
-        
-        $data =  M_CrProspect::whereNull('deleted_at')->get();
+        try {
+            $ao_id = $req->user()->id;
 
-        ActivityLogger::logActivity($req,"Success",200);
-        return response()->json(['message' => 'OK',"status" => 200,'response' => $this->resourceData($data)], 200);
+            $data =  M_CrProspect::whereNull('deleted_at')->where('ao_id', $ao_id)->get();
+
+            ActivityLogger::logActivity($req,"Success",200);
+            return response()->json(['message' => 'OK',"status" => 200,'response' => $this->resourceData($data)], 200);
+        } catch (QueryException $e) {
+            ActivityLogger::logActivity($req,$e->getMessage(),409);
+            return response()->json(['message' => $e->getMessage(),"status" => 409], 409);
+        } catch (\Exception $e) {
+            ActivityLogger::logActivity($req,$e->getMessage(),500);
+            return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
+        }
     }
 
     private function resourceData($data)

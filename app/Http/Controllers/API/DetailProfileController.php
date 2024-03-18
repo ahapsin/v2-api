@@ -4,14 +4,17 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\M_HrEmployee;
-
+use Illuminate\Http\Request;
 
 class DetailProfileController extends Controller
 {
-    public function index($employeeID)
+    public function index(Request $request)
     {
         try {
-            $data = M_HrEmployee::where('ID', $employeeID)->where('STATUS_MST', 'Active')->first();
+
+            $getEmployeID = $request->user()->employee_id;
+
+            $data = M_HrEmployee::where('ID', $getEmployeID)->where('STATUS_MST', 'Active')->first();
 
             if (!$data) {
                 return response()->json(['message' => 'Detail profile not found',"status" => 404], 404);

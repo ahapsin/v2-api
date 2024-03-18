@@ -23,7 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('role', [MasterRoleController::class, 'store']);
 
     //Detail Profile
-    Route::get('me/{employeeID}', [DetailProfileController::class, 'index']);
+    Route::get('me', [DetailProfileController::class, 'index']);
 
     //Route Group Credit Type
     Route::get('credit_type/{status}', [CreditTypeController::class, 'index']);
