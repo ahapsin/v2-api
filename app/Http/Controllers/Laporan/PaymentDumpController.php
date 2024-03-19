@@ -16,7 +16,7 @@ class PaymentDumpController extends Controller
         $data =  M_PaymentDump::where('LOAN_NUM', $noLoan)
                     ->orderBy('LOAN_NUM')
                     ->orderBy('AUTH_DATE')
-                    ->orderBy('AUTH_TIME')
+                    ->orderByRaw("str_to_date(lpad(AUTH_TIME,6,'0'),'%H%i%s')")
                     ->orderBy('OS_PCPL_AMOUNT')
                     ->get();
 
