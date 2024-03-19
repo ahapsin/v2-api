@@ -7,6 +7,7 @@ use App\Http\Controllers\API\CrprospectController;
 use App\Http\Controllers\API\DetailProfileController;
 use App\Http\Controllers\API\Menu\MasterMenuController;
 use App\Http\Controllers\API\Menu\MasterRoleController;
+use App\Http\Controllers\Laporan\PaymentDumpController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Route;
 //Login Authenticate
 Route::post('auth/login', [AuthController::class, 'login'])->name('login');
 Route::post('auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+
+Route::post('payment', [PaymentDumpController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
