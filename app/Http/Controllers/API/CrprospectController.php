@@ -39,7 +39,7 @@ class CrprospectController extends Controller
             $item = [
                 'id' => $data['id'],
                 'ao_id' => $data['ao_id'],
-                'visit_date' => date('d-m-Y',strtotime($data['visit_date'])),
+                'visit_date' => date('Y-m-d',strtotime($data['visit_date'])),
                 'tujuan_kredit' => $data['tujuan_kredit'],
                 'jenis_produk' => $data['jenis_produk'],
                 'plafond' => $data['plafond'],
