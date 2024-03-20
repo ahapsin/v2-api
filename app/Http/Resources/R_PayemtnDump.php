@@ -16,7 +16,7 @@ class R_PayemtnDump extends JsonResource
     {
         return [
             'NO_LOAN' => $this->LOAN_NUM,
-            'TANGGAL' => $this->VALUE_DATE,
+            'TANGGAL' => date("d-m-Y",strtotime($this->VALUE_DATE)),
             'TITLE' => $this->TITLE,
             'NOMINAL' => $this->ORIGINAL_AMOUNT/100,
             'OUTSTANDING' => $this->OS_PCPL_AMOUNT/100,
