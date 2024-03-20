@@ -7,8 +7,10 @@ use App\Models\M_CrProspect;
 use App\Models\M_CrProspectAttachment;
 use App\Models\M_CrProspectCol;
 use App\Models\M_CrProspectPerson;
+use App\Models\M_HrEmployee;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Ramsey\Uuid\Uuid;
 
@@ -34,11 +36,16 @@ class CrprospectController extends Controller
     private function resourceData($data)
     {
         $arrayList=[];
+        
+        $getEmployeID =Auth::user()->employee_id;
+        $ao_name = M_HrEmployee::where('ID', $getEmployeID)->first();
+
         foreach ($data as $data) {
           
             $item = [
                 'id' => $data['id'],
                 'ao_id' => $data['ao_id'],
+                'nama_ao' =>  $ao_name->NAMA,
                 'visit_date' => date('Y-m-d',strtotime($data['visit_date'])),
                 'tujuan_kredit' => $data['tujuan_kredit'],
                 'jenis_produk' => $data['jenis_produk'],
