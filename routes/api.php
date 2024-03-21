@@ -7,6 +7,7 @@ use App\Http\Controllers\API\CrprospectController;
 use App\Http\Controllers\API\DetailProfileController;
 use App\Http\Controllers\API\Menu\MasterMenuController;
 use App\Http\Controllers\API\Menu\MasterRoleController;
+use App\Http\Controllers\API\TestController;
 use App\Http\Controllers\Laporan\HistoryAccController;
 use App\Http\Controllers\Laporan\PaymentDumpController;
 use Illuminate\Http\Request;
@@ -19,6 +20,7 @@ Route::post('auth/logout', [AuthController::class, 'logout'])->middleware('auth:
 
 Route::post('payment', [PaymentDumpController::class, 'index']);
 Route::post('historyAcc', [HistoryAccController::class, 'index']);
+Route::get('test', [TestController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
@@ -36,7 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //Route Group Cr Prospek (Kunjungan)
     Route::get('kunjungan', [CrprospectController::class, 'index']);
-    Route::get('kunjungan/detail/{id}', [CrprospectController::class, 'detail']);
+    Route::post('kunjungan/detail', [CrprospectController::class, 'detail']);
     Route::post('kunjungan', [CrprospectController::class, 'store']);
     Route::put('kunjungan/{id}', [CrprospectController::class, 'update']);
     Route::delete('kunjungan/{id}', [CrprospectController::class, 'destroy']);
