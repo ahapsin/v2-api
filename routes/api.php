@@ -13,14 +13,12 @@ use App\Http\Controllers\Laporan\PaymentDumpController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-
 //Login Authenticate
 Route::post('auth/login', [AuthController::class, 'login'])->name('login');
 Route::post('auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 Route::post('payment', [PaymentDumpController::class, 'index']);
 Route::post('historyAcc', [HistoryAccController::class, 'index']);
-Route::get('test', [TestController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
@@ -44,6 +42,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('kunjungan/{id}', [CrprospectController::class, 'destroy']);
     Route::post('image_upload_prospect', [CrprospectController::class, 'uploadImage']);
     Route::post('multi-upload-images', [CrprospectController::class, 'multiImage']);
+
+    Route::get('test', [TestController::class, 'index']);
 });
 
 Route::post('assets', [AssetsController::class, 'storeAsset']);
