@@ -8,6 +8,7 @@ use App\Models\M_CrProspectAttachment;
 use App\Models\M_CrProspectCol;
 use App\Models\M_CrProspectPerson;
 use App\Models\M_HrEmployee;
+use App\Models\M_SlikApproval;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
@@ -154,16 +155,16 @@ class CrprospectController extends Controller
     {
         DB::beginTransaction();
         try {
-            $this->_validate($request);
+            self::_validate($request);
     
-            $crProspek = $this->createCrProspek($request);
+            $crProspek = self::createCrProspek($request);
     
             if ($request->has('jaminan') && is_array($request->jaminan)) {
-                $this->createCrProspekCol($request, $crProspek);
+                self::createCrProspekCol($request, $crProspek);
             }
 
             if ($request->has('penjamin') && is_array($request->penjamin)) {
-                $this->createCrProspekPerson($request, $crProspek);
+                self::createCrProspekPerson($request, $crProspek);
             }
     
             DB::commit();
@@ -204,6 +205,24 @@ class CrprospectController extends Controller
         ];
     
         return M_CrProspect::create($data_array);
+    } 
+
+    private function createSlikApproval(Request $request,$crProspek)
+    {
+        $data_array = [
+            'ID' => Uuid::uuid4()->toString(),
+            'CR_PROSPECT_ID' => $crProspek->id,
+            'ONCHARGE_APPRVL',
+            'ONCHARGE_PERSON',
+            'ONCHARGE_TIME',
+            'ONCHARGE_DESCR',
+            'DEB_APPRVL',
+            'DEB_DESCR',
+            'DEB_TIME',
+            'SLIK_RESULT'
+        ];
+    
+        return M_SlikApproval::create($data_array);
     } 
     
     private function createCrProspekCol(Request $request, $crProspek)
@@ -253,6 +272,7 @@ class CrprospectController extends Controller
             if (!$prospek) {
                 return response()->json(['message' => 'Record not found', 'status' => 404], 404);
             }
+            
 
             $prospek->update($validator);
 

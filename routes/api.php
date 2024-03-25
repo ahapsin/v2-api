@@ -5,6 +5,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CreditTypeController;
 use App\Http\Controllers\API\CrprospectController;
 use App\Http\Controllers\API\DetailProfileController;
+use App\Http\Controllers\API\LogSendOutController;
 use App\Http\Controllers\API\Menu\MasterMenuController;
 use App\Http\Controllers\API\Menu\MasterRoleController;
 use App\Http\Controllers\API\TestController;
@@ -44,6 +45,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('multi-upload-images', [CrprospectController::class, 'multiImage']);
 
     Route::get('test', [TestController::class, 'index']);
+
+    Route::get('waweb/logs', [LogSendOutController::class, 'index']);
 });
 
 Route::post('assets', [AssetsController::class, 'storeAsset']);
