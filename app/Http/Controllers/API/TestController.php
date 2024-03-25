@@ -4,71 +4,51 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\M_HrEmployee;
-use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 
 class TestController extends Controller
 {
     public function index (){
 
-        // $userId =Auth::user()->employee_id;
-        // $data = $this->getEmployeeHierarchy($userId);
-
-        $test = $this->mapEmployeeToSupervisor();
+        $userId =Auth::user()->employee_id;
+        $test = self::subOrdinateList($userId);
         
         return response()->json(['message' => 'Ok', "status" => 200, 'response' =>  $test], 200);
 
     }
 
-    function mapEmployeeToSupervisor() {
+    public static function subOrdinateList($userId)
+    {
+        $employeeData = M_HrEmployee::subOrdinateList($userId);
 
-        $userId =Auth::user()->employee_id;
-        $employees = M_HrEmployee::subOrdinateList($userId);
+        foreach ($employeeData as $employee) {
+            $subordinates = self::subOrdinateList($employee->employee_id);
 
-        $mappedEmployees = [];
-
-        foreach ($employees as $employee) {
-
-            $employeeId = $employee['employee_id'];
-            $supervisorId = $employee['spv_id'];
-    
-            // Check if the supervisor is also an employee
-            $supervisorEmployee = array_filter($employees, function ($emp) use ($supervisorId) {
-                return $emp['employee_id'] === $supervisorId;
-            });
-    
-            // If supervisor is found, add them to the 'subordinate' field of the supervisor
-            if (!empty($supervisorEmployee)) {
-                $supervisorEmployee = reset($supervisorEmployee);
-                $supervisorEmployee['subordinate'][] = $employee;
-            } else {
-                // If supervisor is not found, add the employee directly to the result
-                $mappedEmployees[] = $employee;
+            if (!empty($subordinates)) {
+                $employeeData->push(...$subordinates->toArray());
             }
         }
-    
-        return $mappedEmployees;
+
+        return $employeeData->isEmpty() ? null : $employeeData;
     }
 
 
-    // function getEmployeeHierarchy($employeeId)
+    // public static function subOrdinateListHierarky($userId)
     // {
-        
-    //     $userDetail = M_HrEmployee::userDetail($employeeId);
+    //     $employeeData = M_HrEmployee::subOrdinateList($userId);
 
-    //     if ($userDetail->ID === $userDetail->spv_id) {
-    //         $subordinates = M_HrEmployee::subOrdinateList($employeeId);
-
-    //         foreach ($subordinates as $subordinate) {
-    //             $userDetail['subordinates'][] = $this->getEmployeeHierarchy($subordinate->ID);
+    //     foreach ($employeeData as $key => $employee) {
+    //         $subordinates = self::subOrdinateListHierarky($employee->employee_id);
+            
+    //         if (!empty($subordinates)) {
+    //             $employeeData[$key]->sub_list = $subordinates->toArray();
     //         }
     //     }
 
-    //     return $userDetail;
+    //     return $employeeData->isEmpty() ? null : $employeeData;
     // }
+
 
     // function buildEmployeeHierarchy($employees, $parentId = null, $searchId = null) {
     //     $employeeTree = [];
