@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\R_CrProspect;
 use App\Models\M_CrProspect;
 use App\Models\M_CrProspectAttachment;
 use App\Models\M_CrProspectCol;
 use App\Models\M_CrProspectPerson;
 use App\Models\M_HrEmployee;
 use App\Models\M_SlikApproval;
+use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
@@ -20,11 +23,11 @@ class CrprospectController extends Controller
     public function index(Request $req){
         try {
             $ao_id = $req->user()->id;
-
             $data =  M_CrProspect::whereNull('deleted_at')->where('ao_id', $ao_id)->get();
+            $dto = R_CrProspect::collection($data);
 
             ActivityLogger::logActivity($req,"Success",200);
-            return response()->json(['message' => 'OK',"status" => 200,'response' => $this->resourceData($data)], 200);
+            return response()->json(['message' => 'OK',"status" => 200,'response' => $dto], 200);
         } catch (QueryException $e) {
             ActivityLogger::logActivity($req,$e->getMessage(),409);
             return response()->json(['message' => $e->getMessage(),"status" => 409], 409);
@@ -34,95 +37,163 @@ class CrprospectController extends Controller
         }
     }
 
+    public function detail(Request $req)
+    {
+        try {
+            $prospectID = $req->prospect_id;
+            $check = M_CrProspect::where('id',$prospectID)->whereNull('deleted_at')->firstOrFail();
+
+            ActivityLogger::logActivity($req,"Success",200);
+            return response()->json(['message' => 'OK',"status" => 200,'response' => self::resourceData($check)], 200);
+        } catch (ModelNotFoundException $e) {
+            ActivityLogger::logActivity($req,'Data Not Found',404);
+            return response()->json(['message' => 'Data Not Found',"status" => 404], 404);
+        } catch (\Exception $e) {
+            ActivityLogger::logActivity($req,$e->getMessage(),500);
+            return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
+        }
+    }
+
     private function resourceData($data)
     {
-        $arrayList=[];
-        
-        $getEmployeID =Auth::user()->employee_id;
-        $ao_name = M_HrEmployee::where('ID', $getEmployeID)->first();
+        $getEmployeID =User::where('id',$data->ao_id)->first();
+        $ao = M_HrEmployee::where('ID', $getEmployeID->employee_id)->first();
 
-        foreach ($data as $data) {
-          
-            $item = [
-                'id' => $data['id'],
-                'ao_id' => $data['ao_id'],
-                'nama_ao' =>  $ao_name->NAMA,
-                'visit_date' => date('Y-m-d',strtotime($data['visit_date'])),
-                'tujuan_kredit' => $data['tujuan_kredit'],
-                'jenis_produk' => $data['jenis_produk'],
-                'plafond' => $data['plafond'],
-                'tenor' => $data['tenor'],
-                'nama' => $data['nama'],
-                'ktp' => $data['ktp'],
-                'kk' => $data['kk'],
-                'tgl_lahir' => $data['tgl_lahir'],
-                'alamat' => $data['alamat'],
-                'hp' => $data['hp'],
-                'usaha' => $data['usaha'],
-                'sector' => $data['sector'],
-                'coordinate' => $data['coordinate'],
-                'accurate' => $data['accurate'],
-                'slik' => $data['slik'],
-                'prospek_jaminan' => [],
-                'prospek_person' => []
-            ];
+        $arrayList = [
+            'id' => $data->id,
+            'ao_id' => $data->ao_id,
+            'data_ao' =>  [
+                'id_ao' => $ao->ID,
+                'nama_ao' => $ao->NAMA,
+            ],
+            'visit_date' => date('Y-m-d',strtotime($data->visit_date)),
+            'tujuan_kredit' => $data->tujuan_kredit,
+            'jenis_produk' => $data->jenis_produk,
+            'plafond' => $data->plafond,
+            'tenor' => $data->tenor,
+            'nama' => $data->nama,
+            'ktp' => $data->ktp,
+            'kk' => $data->kk,
+            'tgl_lahir' => $data->tgl_lahir,
+            'alamat' => $data->alamat,
+            'hp' => $data->hp,
+            'usaha' => $data->usaha,
+            'sector' => $data->sector,
+            'coordinate' => $data->coordinate,
+            'accurate' => $data->accurate,
+            'slik' => $data->slik,
+            'prospek_jaminan' => [],
+            'prospek_person' => []
+        ];
 
-            $colData = DB::table('cr_prospect_col')
-                            ->where('cr_prospect_id',$data['id'] )
-                            ->get();
+        $colData = DB::table('cr_prospect_col')
+                        ->where('cr_prospect_id',$data->id )
+                        ->get();
 
-            foreach ($colData as $list) {
-                if ($list->cr_prospect_id === $data['id']) {
-                    $item['prospek_jaminan'][] = [
-                        'id' => $list->id,
-                        'type' => $list->type,
-                        'collateral_value' => $list->collateral_value,
-                        'description' => $list->description
-                    ];
-                }
+        foreach ($colData as $list) {
+            if ($list->cr_prospect_id === $data->id) {
+                $item['prospek_jaminan'][] = [
+                    'id' => $list->id,
+                    'type' => $list->type,
+                    'collateral_value' => $list->collateral_value,
+                    'description' => $list->description
+                ];
             }
-
-            $personData = DB::table('cr_prospect_person')
-                            ->where('cr_prospect_id',$data['id'] )
-                            ->get();
-
-            foreach ($personData as $list) {
-                if ($list->cr_prospect_id === $data['id']) {
-                    $item['prospek_person'][] = [
-                        'id' => $list->id,
-                        "nama_jaminan" => $list->nama,
-                        "ktp_jaminan" => $list->ktp,
-                        "tgl_lahir_jaminan" => $list->tgl_lahir,
-                        "pekerjaan_jaminan" => $list->pekerjaan,
-                        "status_jaminan" => $list->status
-                    ];
-                }
-            }
-        
-
-            $arrayList[] = $item;
         }
 
+
+        $personData = DB::table('cr_prospect_person')
+                        ->where('cr_prospect_id',$data->id )
+                        ->get();
+
+        foreach ($personData as $list) {
+            if ($list->cr_prospect_id === $data->id) {
+                $item['prospek_person'][] = [
+                    'id' => $list->id,
+                    "nama_jaminan" => $list->nama,
+                    "ktp_jaminan" => $list->ktp,
+                    "tgl_lahir_jaminan" => $list->tgl_lahir,
+                    "pekerjaan_jaminan" => $list->pekerjaan,
+                    "status_jaminan" => $list->status
+                ];
+            }
+        }
+          
+        
         return $arrayList;
     }
 
-    public function detail(Request $req,$id)
-    {
-        $check = M_CrProspect::where('id',$id)->limit(1)->get(); 
+    // private function resourceData($data)
+    // {
+    //     $arrayList=[];
+        
+    //     $getEmployeID =Auth::user()->employee_id;
+    //     $ao_name = M_HrEmployee::where('ID', $getEmployeID)->first();
 
-        if ($check->isEmpty()) {
-            return response()->json(['message' => 'Data Not Found',"status" => 404,'response' => $id], 404);
-        }
+    //     foreach ($data as $data) {
+          
+    //         $item = [
+    //             'id' => $data->id,
+    //             'ao_id' => $data->ao_id,
+    //             'nama_ao' =>  $ao_name->NAMA,
+    //             'visit_date' => date('Y-m-d',strtotime($data->visit_date)),
+    //             'tujuan_kredit' => $data->tujuan_kredit,
+    //             'jenis_produk' => $data->jenis_produk,
+    //             'plafond' => $data->plafond,
+    //             'tenor' => $data->tenor,
+    //             'nama' => $data->nama,
+    //             'ktp' => $data->ktp,
+    //             'kk' => $data->kk,
+    //             'tgl_lahir' => $data->tgl_lahir,
+    //             'alamat' => $data->alamat,
+    //             'hp' => $data->hp,
+    //             'usaha' => $data->usaha,
+    //             'sector' => $data->sector,
+    //             'coordinate' => $data->coordinate,
+    //             'accurate' => $data->accurate,
+    //             'slik' => $data->slik,
+    //             'prospek_jaminan' => [],
+    //             'prospek_person' => []
+    //         ];
 
-        $checkDeletedItem = M_CrProspect::where('id',$id)->whereNull('deleted_at')->get(); 
+    //         // $colData = DB::table('cr_prospect_col')
+    //         //                 ->where('cr_prospect_id',$data->id )
+    //         //                 ->get();
 
-        if ($checkDeletedItem->isEmpty()) {
-            return response()->json(['message' => 'Data has been deleted',"status" => 200,'response' => $id], 200);
-        }
+    //         // foreach ($colData as $list) {
+    //         //     if ($list->cr_prospect_id === $data->id) {
+    //         //         $item['prospek_jaminan'][] = [
+    //         //             'id' => $list->id,
+    //         //             'type' => $list->type,
+    //         //             'collateral_value' => $list->collateral_value,
+    //         //             'description' => $list->description
+    //         //         ];
+    //         //     }
+    //         // }
 
-        ActivityLogger::logActivity($req,"Success",200);
-        return response()->json(['message' => 'OK',"status" => 200,'response' => $this->resourceData($check)], 200);
-    }
+    //         // $personData = DB::table('cr_prospect_person')
+    //         //                 ->where('cr_prospect_id',$data->id )
+    //         //                 ->get();
+
+    //         // foreach ($personData as $list) {
+    //         //     if ($list->cr_prospect_id === $data->id) {
+    //         //         $item['prospek_person'][] = [
+    //         //             'id' => $list->id,
+    //         //             "nama_jaminan" => $list->nama,
+    //         //             "ktp_jaminan" => $list->ktp,
+    //         //             "tgl_lahir_jaminan" => $list->tgl_lahir,
+    //         //             "pekerjaan_jaminan" => $list->pekerjaan,
+    //         //             "status_jaminan" => $list->status
+    //         //         ];
+    //         //     }
+    //         // }
+        
+
+    //         $arrayList[] = $item;
+    //     }
+
+    //     return $arrayList;
+    // }
 
     public function _validate($request)
     {
