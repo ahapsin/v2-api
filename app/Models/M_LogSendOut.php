@@ -14,14 +14,14 @@ class M_LogSendOut extends Model
         'id',
         'phone_number',
         'message',
-        'status',
-        'created_at'
+        'status'
     ];
 
     protected $guarded = [];
     public $incrementing = false;
     protected $keyType = 'string';
     protected $primaryKey = 'id';
+    public $timestamps = false;
     protected static function boot()
     {
         parent::boot();

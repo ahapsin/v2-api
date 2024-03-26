@@ -21,6 +21,11 @@ Route::post('auth/logout', [AuthController::class, 'logout'])->middleware('auth:
 Route::post('payment', [PaymentDumpController::class, 'index']);
 Route::post('historyAcc', [HistoryAccController::class, 'index']);
 
+Route::get('waweb/logs', [LogSendOutController::class, 'index']);
+Route::post('waweb/logs', [LogSendOutController::class, 'store']);
+Route::put('waweb/logs/{id}', [LogSendOutController::class, 'update']);
+Route::get('waweb/task', [LogSendOutController::class, 'filter']);
+
 Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
     Route::get('menu', [MasterMenuController::class, 'index']);
@@ -45,8 +50,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('multi-upload-images', [CrprospectController::class, 'multiImage']);
 
     Route::get('test', [TestController::class, 'index']);
-
-    Route::get('waweb/logs', [LogSendOutController::class, 'index']);
 });
 
 Route::post('assets', [AssetsController::class, 'storeAsset']);
