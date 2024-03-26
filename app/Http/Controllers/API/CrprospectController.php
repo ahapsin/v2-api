@@ -63,8 +63,10 @@ class CrprospectController extends Controller
             'id' => $data->id,
             'ao_id' => $data->ao_id,
             'data_ao' =>  [
-                'id_ao' => $ao->ID,
-                'nama_ao' => $ao->NAMA,
+                [
+                    'id_ao' => $ao->ID,
+                    'nama_ao' => $ao->NAMA,
+                ]
             ],
             'visit_date' => date('Y-m-d',strtotime($data->visit_date)),
             'tujuan_kredit' => $data->tujuan_kredit,
