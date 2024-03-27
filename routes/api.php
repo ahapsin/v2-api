@@ -1,14 +1,16 @@
 <?php
 
-use App\Http\Controllers\API\AssetsController;
-use App\Http\Controllers\API\AuthController;
-use App\Http\Controllers\API\CreditTypeController;
-use App\Http\Controllers\API\CrprospectController;
-use App\Http\Controllers\API\DetailProfileController;
-use App\Http\Controllers\API\LogSendOutController;
+use App\Http\Controllers\API\{
+    AssetsController,
+    AuthController,
+    CreditTypeController,
+    CrprospectController,
+    DetailProfileController,
+    LogSendOutController,
+    SubordinateListController
+};
 use App\Http\Controllers\API\Menu\MasterMenuController;
 use App\Http\Controllers\API\Menu\MasterRoleController;
-use App\Http\Controllers\API\TestController;
 use App\Http\Controllers\Laporan\HistoryAccController;
 use App\Http\Controllers\Laporan\PaymentDumpController;
 use Illuminate\Http\Request;
@@ -48,6 +50,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('kunjungan/{id}', [CrprospectController::class, 'destroy']);
     Route::post('image_upload_prospect', [CrprospectController::class, 'uploadImage']);
     Route::post('multi-upload-images', [CrprospectController::class, 'multiImage']);
+
+    Route::post('getSpv', [SubordinateListController::class, 'spvSearch']);
+    Route::post('getHierarchy', [SubordinateListController::class, 'getHierarchy']);
 });
 
 Route::post('assets', [AssetsController::class, 'storeAsset']);

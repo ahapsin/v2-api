@@ -82,4 +82,15 @@ class M_HrEmployee extends Model
         return $subList;
         
     }
+
+    public static function getSpv($nik){
+
+        $setSpv = M_HrRolling::select('hr_employee.*')
+                                ->leftJoin('hr_employee', 'hr_employee.ID', '=', 'hr_rolling.SPV')
+                                ->where('hr_rolling.USE_FLAG', '=', 'Active')
+                                ->where('hr_rolling.NIK', '=', $nik)
+                                ->get();
+
+        return $setSpv;
+    }
 }
