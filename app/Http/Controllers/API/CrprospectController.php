@@ -14,7 +14,6 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Ramsey\Uuid\Uuid;
 
@@ -125,78 +124,6 @@ class CrprospectController extends Controller
         return $arrayList;
     }
 
-    // private function resourceData($data)
-    // {
-    //     $arrayList=[];
-        
-    //     $getEmployeID =Auth::user()->employee_id;
-    //     $ao_name = M_HrEmployee::where('ID', $getEmployeID)->first();
-
-    //     foreach ($data as $data) {
-          
-    //         $item = [
-    //             'id' => $data->id,
-    //             'ao_id' => $data->ao_id,
-    //             'nama_ao' =>  $ao_name->NAMA,
-    //             'visit_date' => date('Y-m-d',strtotime($data->visit_date)),
-    //             'tujuan_kredit' => $data->tujuan_kredit,
-    //             'jenis_produk' => $data->jenis_produk,
-    //             'plafond' => $data->plafond,
-    //             'tenor' => $data->tenor,
-    //             'nama' => $data->nama,
-    //             'ktp' => $data->ktp,
-    //             'kk' => $data->kk,
-    //             'tgl_lahir' => $data->tgl_lahir,
-    //             'alamat' => $data->alamat,
-    //             'hp' => $data->hp,
-    //             'usaha' => $data->usaha,
-    //             'sector' => $data->sector,
-    //             'coordinate' => $data->coordinate,
-    //             'accurate' => $data->accurate,
-    //             'slik' => $data->slik,
-    //             'prospek_jaminan' => [],
-    //             'prospek_person' => []
-    //         ];
-
-    //         // $colData = DB::table('cr_prospect_col')
-    //         //                 ->where('cr_prospect_id',$data->id )
-    //         //                 ->get();
-
-    //         // foreach ($colData as $list) {
-    //         //     if ($list->cr_prospect_id === $data->id) {
-    //         //         $item['prospek_jaminan'][] = [
-    //         //             'id' => $list->id,
-    //         //             'type' => $list->type,
-    //         //             'collateral_value' => $list->collateral_value,
-    //         //             'description' => $list->description
-    //         //         ];
-    //         //     }
-    //         // }
-
-    //         // $personData = DB::table('cr_prospect_person')
-    //         //                 ->where('cr_prospect_id',$data->id )
-    //         //                 ->get();
-
-    //         // foreach ($personData as $list) {
-    //         //     if ($list->cr_prospect_id === $data->id) {
-    //         //         $item['prospek_person'][] = [
-    //         //             'id' => $list->id,
-    //         //             "nama_jaminan" => $list->nama,
-    //         //             "ktp_jaminan" => $list->ktp,
-    //         //             "tgl_lahir_jaminan" => $list->tgl_lahir,
-    //         //             "pekerjaan_jaminan" => $list->pekerjaan,
-    //         //             "status_jaminan" => $list->status
-    //         //         ];
-    //         //     }
-    //         // }
-        
-
-    //         $arrayList[] = $item;
-    //     }
-
-    //     return $arrayList;
-    // }
-
     public function _validate($request)
     {
 
@@ -208,11 +135,11 @@ class CrprospectController extends Controller
             'plafond' => 'required|numeric',
             'tenor' => 'required|numeric',
             'nama' => 'required|string',
-            'ktp' => 'required|numeric|max:20',
-            'kk' => 'required|numeric|max:20',
+            'ktp' => 'required|numeric',
+            'kk' => 'required|numeric',
             'tgl_lahir' => 'required|date',
             'alamat' => 'required|string',
-            'hp' => 'required|numeric|max:20',
+            'hp' => 'required|numeric',
             'usaha' => 'required|string',
             'sector' => 'required|string',
             // 'coordinate' => 'string',
@@ -231,6 +158,15 @@ class CrprospectController extends Controller
             self::_validate($request);
     
             $crProspek = self::createCrProspek($request);
+
+            if ($request->slik === 1) {
+                $data_array = [
+                    'ID' => Uuid::uuid4()->toString(),
+                    'CR_PROSPECT_ID' => $request->id
+                ];
+            
+                 M_SlikApproval::create($data_array);
+            }
     
             if ($request->has('jaminan') && is_array($request->jaminan)) {
                 self::createCrProspekCol($request, $crProspek);
@@ -278,24 +214,6 @@ class CrprospectController extends Controller
         ];
     
         return M_CrProspect::create($data_array);
-    } 
-
-    private function createSlikApproval(Request $request,$crProspek)
-    {
-        $data_array = [
-            'ID' => Uuid::uuid4()->toString(),
-            'CR_PROSPECT_ID' => $crProspek->id,
-            'ONCHARGE_APPRVL',
-            'ONCHARGE_PERSON',
-            'ONCHARGE_TIME',
-            'ONCHARGE_DESCR',
-            'DEB_APPRVL',
-            'DEB_DESCR',
-            'DEB_TIME',
-            'SLIK_RESULT'
-        ];
-    
-        return M_SlikApproval::create($data_array);
     } 
     
     private function createCrProspekCol(Request $request, $crProspek)
