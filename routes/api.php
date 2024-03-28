@@ -7,6 +7,7 @@ use App\Http\Controllers\API\{
     CrprospectController,
     DetailProfileController,
     LogSendOutController,
+    SlikApprovalController,
     SubordinateListController
 };
 use App\Http\Controllers\API\Menu\MasterMenuController;
@@ -53,6 +54,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('getSpv', [SubordinateListController::class, 'spvSearch']);
     Route::post('getHierarchy', [SubordinateListController::class, 'getHierarchy']);
+
+    Route::put('slikSpv', [SlikApprovalController::class, 'update']);
 });
 
 Route::post('assets', [AssetsController::class, 'storeAsset']);

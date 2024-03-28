@@ -4,10 +4,12 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\M_SlikApproval;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Ramsey\Uuid\Uuid;
+
 
 class SlikApprovalController extends Controller
 {
@@ -36,44 +38,60 @@ class SlikApprovalController extends Controller
         return $validator;
     }
 
-    public function store(Request $request)
+    public function timeNow(){
+        $formattedDateTime = Carbon::now()->format('Y-m-d H:i:s');
+        
+        return $formattedDateTime;
+    }
+
+    public function update(Request $request)
     {
         DB::beginTransaction();
         try {
             self::_validate($request);
 
-            $data_array = [
-                'ID' => Uuid::uuid4()->toString(),
-                'CR_PROSPECT_ID' => $request->id,
-                'ONCHARGE_APPRVL',
-                'ONCHARGE_PERSON',
-                'ONCHARGE_TIME',
-                'ONCHARGE_DESCR',
-                'DEB_APPRVL',
-                'DEB_DESCR',
-                'DEB_TIME',
-                'SLIK_RESULT'
-            ];
-        
-            return M_SlikApproval::create($data_array);
+            $check = M_SlikApproval::where('CR_PROSPECT_ID',$request->cr_prospect_id)->firstOrFail();
+
+            if($request->filled('spv_employee_id')){
+                $request->validate([
+                    'spv_approval' => 'required|string'
+                ]);
+
+                $data_array =  [
+                    'ONCHARGE_APPRVL' => $request->spv_approval,
+                    'ONCHARGE_PERSON' => $request->spv_employee_id,
+                    'ONCHARGE_DESCR' => $request->spv_description,
+                    'ONCHARGE_TIME' => self::timeNow()
+                ];
+
+                $check->update($data_array);
+
+            }else {
+                $request->validate([
+                    'deb_approval' => 'required|string'
+                ]);
+
+                $data_array =  [
+                    'DEB_APPRVL'=> $request->deb_approval,
+                    'DEB_DESCR' => $request->deb_description,
+                    'DEB_TIME' => self::timeNow()
+                ];
+                
+                $check->update($data_array);
+            }
     
             DB::commit();
             ActivityLogger::logActivity($request,"Success",200);
-            return response()->json(['message' => 'Kunjungan created successfully',"status" => 200,'response' => $request->all()], 200);
-        } catch (QueryException $e) {
+            return response()->json(['message' => 'Slik Approval Updated successfully',"status" => 200], 200);
+        } catch (ModelNotFoundException $e) {
             DB::rollback();
-            ActivityLogger::logActivity($request,$e->getMessage(),409);
-            return response()->json(['message' => $e->getMessage(),"status" => 409], 409);
+            ActivityLogger::logActivity($request,'Data Not Found',404);
+            return response()->json(['message' => 'Data Not Found',"status" => 404], 404);
         } catch (\Exception $e) {
             DB::rollback();
             ActivityLogger::logActivity($request,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
-    }
-
-    public function update(Request $request, string $id)
-    {
-        //
     }
 
     /**
