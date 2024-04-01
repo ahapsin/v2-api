@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\{
+    ApproveController,
     AssetsController,
     AuthController,
     CreditTypeController,
@@ -8,6 +9,7 @@ use App\Http\Controllers\API\{
     DetailProfileController,
     LogSendOutController,
     SlikApprovalController,
+    SlikProgressController,
     SubordinateListController
 };
 use App\Http\Controllers\API\Menu\MasterMenuController;
@@ -28,6 +30,21 @@ Route::get('waweb/logs', [LogSendOutController::class, 'index']);
 Route::post('waweb/logs', [LogSendOutController::class, 'store']);
 Route::put('waweb/logs/{id}', [LogSendOutController::class, 'update']);
 Route::get('waweb/task', [LogSendOutController::class, 'filter']);
+
+Route::get('approve', [ApproveController::class, 'generate'])->name('approveValid');
+
+//SLIK PROGRESS
+
+//! create temporary signed url
+Route::get('createurl/{id}', [SlikProgressController::class, 'creaturl']);
+//? check incoming url signed
+// return cr_prospect data
+Route::get('approval/{id}', [SlikProgressController::class, 'approval_data'])
+    ->name('approve_slik')
+    ->middleware('signed');
+//! update approval by action user
+Route::put('approval', [SlikProgressController::class], 'approve');
+
 
 Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
