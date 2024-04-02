@@ -7,6 +7,7 @@ use App\Http\Controllers\API\{
     CrprospectController,
     DetailProfileController,
     LogSendOutController,
+    LogTemporaryLinkController,
     SlikApprovalController,
     SubordinateListController
 };
@@ -32,8 +33,10 @@ Route::get('waweb/task', [LogSendOutController::class, 'filter']);
 //SLIK PROGRESS
 
 //! create temporary signed url
-Route::get('createurl/{id}', [SlikApprovalController::class, 'creaturl']);
+Route::post('createurl', [SlikApprovalController::class, 'creaturl']);
 //? check incoming url signed
+
+Route::get('getExpiredLink/{id}', [LogTemporaryLinkController::class, 'index']);
 
 // return cr_prospect data
 Route::get('kunjungan/detailApproval/{id}', [CrprospectController::class, 'detailApproval'])
@@ -41,7 +44,7 @@ Route::get('kunjungan/detailApproval/{id}', [CrprospectController::class, 'detai
     ->middleware('signed');
 
 //! update approval by action user
-Route::put('approval', [SlikApprovalController::class], 'approveCustomer');
+Route::put('approval', [SlikApprovalController::class,'approveCustomer']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu

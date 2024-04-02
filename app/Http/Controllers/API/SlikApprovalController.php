@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\M_CrProspect;
+use App\Models\M_LogTemporaryLink;
 use App\Models\M_SlikApproval;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -10,6 +12,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
+use Ramsey\Uuid\Uuid;
 
 
 class SlikApprovalController extends Controller
@@ -29,15 +32,42 @@ class SlikApprovalController extends Controller
         }
     }
 
-    public function creaturl($id)
-    {
-        $exp_set = now()->addMinutes(1);
+    public function creaturl(Request $request)
+    {       
+        DB::beginTransaction();
+        try {
+            
+            $cr_prospect_id = $request->id;
 
-        $url = URL::temporarySignedRoute('approve_slik', $exp_set, ['id' => base64_encode($id)]);
+            $request->validate([
+                'id' => 'required|string'
+            ]);
 
-        return response()->json([
-            'url' => $url
-        ]);
+            M_CrProspect::where('id',$cr_prospect_id)->firstOrFail();
+
+            $exp_set = now()->addMinutes(1);
+            $url = URL::temporarySignedRoute('approve_slik', $exp_set, ['id' => base64_encode($cr_prospect_id)]);
+            $uuid =Uuid::uuid4()->toString();
+
+            $data_array =  [
+                'id' => $uuid,
+                'description' => $url,
+                'created_by' => 'user'
+            ];
+
+            M_LogTemporaryLink::create($data_array);
+
+            DB::commit();
+            return response()->json(['message' => 'OK',"status" => 200, 'response' => ['id' => $uuid,'url' => $url]], 200);
+        } catch (ModelNotFoundException $e) {
+            DB::rollback();
+            // ActivityLogger::logActivity($request,'Data Not Found',404);
+            return response()->json(['message' => 'Data Not Found',"status" => 404], 404);
+        } catch (\Exception $e) {
+            DB::rollback();
+            // ActivityLogger::logActivity($request,$e->getMessage(),500);
+            return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
+        }
     }
 
     public function _validate($request)

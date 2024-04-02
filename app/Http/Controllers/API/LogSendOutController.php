@@ -38,8 +38,7 @@ class LogSendOutController extends Controller
     {
         $validator = $request->validate([
             'phone_number' => 'required|numeric',
-            'message' => 'required|string',
-            'status' => 'required'
+            'message' => 'required|string'
         ]);
 
         return $validator;
@@ -75,27 +74,14 @@ class LogSendOutController extends Controller
         }
     }
 
-
-    public function _validateUpdate($request)
-    {
-        $validator = $request->validate([
-            'status' => 'required'
-        ]);
-
-        return $validator;
-    }
-
     public function update(Request $request,$id)
     {
         DB::beginTransaction();
         try {
-            self::_validateUpdate($request);
-
+    
             $getSendOut = M_LogSendOut::findOrFail($id);
             
             $data_array = [
-                // 'phone_number' => $request->phone_number,
-                // 'message' => $request->message,
                 'status' => $request->status
             ];
         
