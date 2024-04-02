@@ -36,13 +36,28 @@ class CrprospectController extends Controller
         }
     }
 
-    public function detail(Request $req)
+    public function detail(Request $req,$id)
     {
         try {
-            $prospectID = $req->prospect_id;
-            $check = M_CrProspect::where('id',$prospectID)->whereNull('deleted_at')->firstOrFail();
+            $check = M_CrProspect::where('id',$id)->whereNull('deleted_at')->firstOrFail();
 
             ActivityLogger::logActivity($req,"Success",200);
+            return response()->json(['message' => 'OK',"status" => 200,'response' => self::resourceData($check)], 200);
+        } catch (ModelNotFoundException $e) {
+            ActivityLogger::logActivity($req,'Data Not Found',404);
+            return response()->json(['message' => 'Data Not Found',"status" => 404], 404);
+        } catch (\Exception $e) {
+            ActivityLogger::logActivity($req,$e->getMessage(),500);
+            return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
+        }
+    }
+
+    public function detailApproval(Request $req,$id)
+    {
+        try {
+            $prospectID = base64_decode($id);
+            $check = M_CrProspect::where('id',$prospectID)->whereNull('deleted_at')->firstOrFail();
+
             return response()->json(['message' => 'OK',"status" => 200,'response' => self::resourceData($check)], 200);
         } catch (ModelNotFoundException $e) {
             ActivityLogger::logActivity($req,'Data Not Found',404);

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class M_HrEmployee extends Model
@@ -83,13 +84,15 @@ class M_HrEmployee extends Model
         
     }
 
-    public static function getSpv($nik){
+    public static function getSpv($employeeID){
 
-        $setSpv = M_HrRolling::select('hr_employee.*')
-                                ->leftJoin('hr_employee', 'hr_employee.ID', '=', 'hr_rolling.SPV')
-                                ->where('hr_rolling.USE_FLAG', '=', 'Active')
-                                ->where('hr_rolling.NIK', '=', $nik)
-                                ->get();
+        $setSpv = DB::table('hr_employee as a')
+                        ->select('spv_name.*')
+                        ->leftJoin('hr_rolling as b', 'b.nik', '=', 'a.nik')
+                        ->leftJoin('hr_employee as spv_name', 'spv_name.ID', '=', 'b.SPV')
+                        ->where('b.USE_FLAG', '=', 'Active')
+                        ->where('a.ID', '=',$employeeID)
+                        ->get();
 
         return $setSpv;
     }

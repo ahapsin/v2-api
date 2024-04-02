@@ -12,10 +12,10 @@ class SubordinateListController extends Controller
     public function spvSearch(Request $request){
         try {
             $request->validate([
-                'nik' => 'required|numeric',
+                'employee_id' => 'required|string',
             ]);
 
-            $data = M_HrEmployee::getSpv($request->nik);
+            $data = M_HrEmployee::getSpv($request->employee_id);
 
             return response()->json(['message' => 'OK',"status" => 200,'response' => $data], 200);
         } catch (QueryException $e) {

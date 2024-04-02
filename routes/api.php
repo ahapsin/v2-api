@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\API\{
-    ApproveController,
     AssetsController,
     AuthController,
     CreditTypeController,
@@ -9,7 +8,6 @@ use App\Http\Controllers\API\{
     DetailProfileController,
     LogSendOutController,
     SlikApprovalController,
-    SlikProgressController,
     SubordinateListController
 };
 use App\Http\Controllers\API\Menu\MasterMenuController;
@@ -31,20 +29,19 @@ Route::post('waweb/logs', [LogSendOutController::class, 'store']);
 Route::put('waweb/logs/{id}', [LogSendOutController::class, 'update']);
 Route::get('waweb/task', [LogSendOutController::class, 'filter']);
 
-Route::get('approve', [ApproveController::class, 'generate'])->name('approveValid');
-
 //SLIK PROGRESS
 
 //! create temporary signed url
-Route::get('createurl/{id}', [SlikProgressController::class, 'creaturl']);
+Route::get('createurl/{id}', [SlikApprovalController::class, 'creaturl']);
 //? check incoming url signed
+
 // return cr_prospect data
-Route::get('approval/{id}', [SlikProgressController::class, 'approval_data'])
+Route::get('kunjungan/detailApproval/{id}', [CrprospectController::class, 'detailApproval'])
     ->name('approve_slik')
     ->middleware('signed');
-//! update approval by action user
-Route::put('approval', [SlikProgressController::class], 'approve');
 
+//! update approval by action user
+Route::put('approval', [SlikApprovalController::class], 'approveCustomer');
 
 Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
@@ -62,7 +59,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //Route Group Cr Prospek (Kunjungan)
     Route::get('kunjungan', [CrprospectController::class, 'index']);
-    Route::post('kunjungan/detail', [CrprospectController::class, 'detail']);
+    Route::get('kunjungan/{id}', [CrprospectController::class, 'detail']);
     Route::post('kunjungan', [CrprospectController::class, 'store']);
     Route::put('kunjungan/{id}', [CrprospectController::class, 'update']);
     Route::delete('kunjungan/{id}', [CrprospectController::class, 'destroy']);
@@ -72,7 +69,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('getSpv', [SubordinateListController::class, 'spvSearch']);
     Route::post('getHierarchy', [SubordinateListController::class, 'getHierarchy']);
 
-    Route::put('slikSpv', [SlikApprovalController::class, 'update']);
+    Route::put('slikSpv', [SlikApprovalController::class, 'approveSpv']);
 });
 
 Route::post('assets', [AssetsController::class, 'storeAsset']);
