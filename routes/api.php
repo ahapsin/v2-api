@@ -9,7 +9,8 @@ use App\Http\Controllers\API\{
     LogSendOutController,
     LogTemporaryLinkController,
     SlikApprovalController,
-    SubordinateListController
+    SubordinateListController,
+    UsersController
 };
 use App\Http\Controllers\API\Menu\MasterMenuController;
 use App\Http\Controllers\API\Menu\MasterRoleController;
@@ -45,6 +46,8 @@ Route::get('kunjungan/detailApproval/{id}', [CrprospectController::class, 'detai
 
 //! update approval by action user
 Route::put('approval', [SlikApprovalController::class,'approveCustomer']);
+
+Route::put('editusers', [UsersController::class,'update']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
