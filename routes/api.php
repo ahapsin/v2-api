@@ -52,6 +52,7 @@ Route::put('editusers', [UsersController::class,'update']);
 Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
     Route::get('menu', [MasterMenuController::class, 'index']);
+    Route::get('getSubMenu', [MasterMenuController::class, 'getSubMenu']);
     Route::get('role', [MasterRoleController::class, 'index']);
     Route::post('menu', [MasterMenuController::class, 'store']);
     Route::post('role', [MasterRoleController::class, 'store']);

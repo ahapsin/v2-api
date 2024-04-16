@@ -45,7 +45,7 @@ class SlikApprovalController extends Controller
 
             M_CrProspect::where('id',$cr_prospect_id)->firstOrFail();
 
-            $exp_set = now()->addMinutes(1);
+            $exp_set = now()->addMinutes(10);
             $url = URL::temporarySignedRoute('approve_slik', $exp_set, ['id' => base64_encode($cr_prospect_id)]);
             $uuid =Uuid::uuid4()->toString();
 

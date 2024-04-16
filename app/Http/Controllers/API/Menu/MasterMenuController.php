@@ -69,6 +69,47 @@ class MasterMenuController extends Controller
         return array_values($menuArray);
     }
 
+    public function getSubMenu(Request $request)
+    {
+        $menu_id = $request->menu_id;
+
+        $query = M_MasterMenu::where('id', $menu_id)->first();
+
+        $data = [
+            'menuid' => $query->id,
+            'query' => [
+                'labelmenu' => $query->menu_name,
+                'routename' => $query->route,
+                'leading' => explode( ',',$query->leading),
+                'action' => $query->action,
+                'ability' => $query->ability,
+                'submenu' => []
+            ]
+        ];
+
+        return response()->json(['message' => 'OK', "status" => 200, 'response' => self::buildSubMenu($data)], 200);
+    }
+
+    function buildSubMenu($menuItems)
+    {
+        $menu_id =  $menuItems['menuid'];
+
+        $querySubMenu = M_MasterMenu::where('parent', $menu_id)->get();
+
+        foreach ($querySubMenu as $menuItem) {
+            $menuItems['submenu'][] = [
+                'subid' => $menuItem['id'],
+                'sublabel' => $menuItem['menu_name'],
+                'subroute' => $menuItem['route'],
+                'leading' => explode( ',',$menuItem['leading']),
+                'action' => $menuItem['action'],
+                'ability' => $menuItem['ability']
+            ];
+        }  
+
+        return $menuItems;
+    }
+
     public function _validate($request)
     {
         $validator = $request->validate([
