@@ -65,7 +65,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('credit_type', [CreditTypeController::class, 'index']);
 
     //Route Group Cr Prospek (Kunjungan)
-    Route::get('kunjungan', [CrprospectController::class, 'index']);
+    Route::get('kunjungan', [CrprospectController::class, '
+    index']);
     Route::get('kunjungan/{id}', [CrprospectController::class, 'detail']);
     Route::post('kunjungan', [CrprospectController::class, 'store']);
     Route::put('kunjungan/{id}', [CrprospectController::class, 'update']);
