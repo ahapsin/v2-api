@@ -5,6 +5,7 @@ use App\Http\Controllers\API\{
     AuthController,
     CreditTypeController,
     CrprospectController,
+    CustomerAccountController,
     DetailProfileController,
     LogSendOutController,
     LogTemporaryLinkController,
@@ -30,6 +31,8 @@ Route::get('waweb/logs', [LogSendOutController::class, 'index']);
 Route::post('waweb/logs', [LogSendOutController::class, 'store']);
 Route::put('waweb/logs/{id}', [LogSendOutController::class, 'update']);
 Route::get('waweb/task', [LogSendOutController::class, 'filter']);
+
+Route::get('customerAccount', [CustomerAccountController::class, 'index']);
 
 //SLIK PROGRESS
 
@@ -65,8 +68,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('credit_type', [CreditTypeController::class, 'index']);
 
     //Route Group Cr Prospek (Kunjungan)
-    Route::get('kunjungan', [CrprospectController::class, '
-    index']);
+    Route::get('kunjungan', [CrprospectController::class, 'index']);
     Route::get('kunjungan/{id}', [CrprospectController::class, 'detail']);
     Route::post('kunjungan', [CrprospectController::class, 'store']);
     Route::put('kunjungan/{id}', [CrprospectController::class, 'update']);
