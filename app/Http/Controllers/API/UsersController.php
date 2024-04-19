@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -27,12 +28,45 @@ class UsersController extends Controller
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    public function _validate($request)
+    {
+
+        $validator = $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string'
+        ]);
+
+        return $validator;
+    }
+
+
     public function store(Request $request)
     {
-        //
+        DB::beginTransaction();
+        try {
+            self::_validate($request);
+
+            $data_array = [
+                'username' => $request->username,
+                'email' => $request->email,
+                'password' => bcrypt($request->password),
+                'status' => $request->status,
+            ];
+        
+            User::create($data_array);
+    
+            DB::commit();
+            ActivityLogger::logActivity($request,"Success",200);
+            return response()->json(['message' => 'User created successfully',"status" => 200], 200);
+        }catch (QueryException $e) {
+            DB::rollback();
+            ActivityLogger::logActivity($request,$e->getMessage(),409);
+            return response()->json(['message' => $e->getMessage(),"status" => 409], 409);
+        } catch (\Exception $e) {
+            DB::rollback();
+            ActivityLogger::logActivity($request,$e->getMessage(),500);
+            return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
+        }
     }
 
     public function update(Request $request)

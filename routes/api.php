@@ -52,6 +52,8 @@ Route::put('approval', [SlikApprovalController::class,'approveCustomer']);
 
 Route::put('editusers', [UsersController::class,'update']);
 
+Route::post('createUser', [UsersController::class, 'store']);
+
 Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
     Route::get('menu', [MasterMenuController::class, 'index']);
