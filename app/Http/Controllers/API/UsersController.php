@@ -33,6 +33,7 @@ class UsersController extends Controller
 
         $validator = $request->validate([
             'username' => 'required|string',
+            'email' => 'required|email|unique:users',
             'password' => 'required|string'
         ]);
 
