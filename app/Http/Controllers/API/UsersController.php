@@ -57,15 +57,12 @@ class UsersController extends Controller
             User::create($data_array);
     
             DB::commit();
-            ActivityLogger::logActivity($request,"Success",200);
             return response()->json(['message' => 'User created successfully',"status" => 200], 200);
         }catch (QueryException $e) {
             DB::rollback();
-            ActivityLogger::logActivity($request,$e->getMessage(),409);
             return response()->json(['message' => $e->getMessage(),"status" => 409], 409);
         } catch (\Exception $e) {
             DB::rollback();
-            ActivityLogger::logActivity($request,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
     }
