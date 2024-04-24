@@ -17,15 +17,16 @@ use Ramsey\Uuid\Uuid;
 
 class SlikApprovalController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request,$cr_prospect_id)
     {
         try {
-            $data = M_SlikApproval::all();
+            $check = M_SlikApproval::where('CR_PROSPECT_ID',$cr_prospect_id)->get();
 
-            return response()->json(['message' => 'OK',"status" => 200,'response' => $data], 200);
-        } catch (QueryException $e) {
-            ActivityLogger::logActivity($request,$e->getMessage(),409);
-            return response()->json(['message' => $e->getMessage(),"status" => 409], 409);
+            if($check->isEmpty()){
+                return response()->json(['message' => 'Data Not Found',"status" => 404], 404);
+            }
+
+            return response()->json(['message' => 'OK',"status" => 200,'response' => $check], 200);
         } catch (\Exception $e) {
             ActivityLogger::logActivity($request,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
@@ -97,11 +98,19 @@ class SlikApprovalController extends Controller
                 'spv_approval' => 'required|string'
             ]);
 
+            $checkApprvalDeb = M_SlikApproval::where('CR_PROSPECT_ID',$request->cr_prospect_id)
+                                ->where(function($query) {
+                                    $query->whereNull('DEB_APPRVL')
+                                        ->orWhere('DEB_APPRVL', '');
+                                })
+                                ->get();
+
             $data_array =  [
                 'ONCHARGE_APPRVL' => $request->spv_approval,
                 'ONCHARGE_PERSON' => $request->spv_employee_id,
                 'ONCHARGE_DESCR' => $request->spv_description,
-                'ONCHARGE_TIME' => self::timeNow()
+                'ONCHARGE_TIME' => self::timeNow(),
+                'SLIK_RESULT' => !$checkApprvalDeb->isEmpty() ? '1:waiting approval deb' : '2:waiting slik'
             ];
 
             $check->update($data_array);
@@ -133,10 +142,18 @@ class SlikApprovalController extends Controller
                 'deb_approval' => 'required|string'
             ]);
 
+            $checkApprvalSPV = M_SlikApproval::where('CR_PROSPECT_ID',$request->cr_prospect_id)
+                                ->where(function($query) {
+                                    $query->whereNull('ONCHARGE_APPRVL')
+                                        ->orWhere('ONCHARGE_APPRVL', '');
+                                })
+                                ->get();
+
             $data_array =  [
                 'DEB_APPRVL'=> $request->deb_approval,
                 'DEB_DESCR' => $request->deb_description,
-                'DEB_TIME' => self::timeNow()
+                'DEB_TIME' => self::timeNow(),
+                'SLIK_RESULT' => !$checkApprvalSPV->isEmpty() ? '1:waiting approval deb' : '2:waiting slik'
             ];
             
             $check->update($data_array);

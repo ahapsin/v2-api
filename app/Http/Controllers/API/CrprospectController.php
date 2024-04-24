@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 use Ramsey\Uuid\Uuid;
 
 class CrprospectController extends Controller
@@ -42,7 +43,7 @@ class CrprospectController extends Controller
             $check = M_CrProspect::where('id',$id)->whereNull('deleted_at')->firstOrFail();
 
             ActivityLogger::logActivity($req,"Success",200);
-            return response()->json(['message' => 'OK',"status" => 200,'response' => self::resourceData($check)], 200);
+            return response()->json(['message' => 'OK',"status" => 200,'response' => self::resourceDetail($check)], 200);
         } catch (ModelNotFoundException $e) {
             ActivityLogger::logActivity($req,'Data Not Found',404);
             return response()->json(['message' => 'Data Not Found',"status" => 404], 404);
@@ -139,6 +140,113 @@ class CrprospectController extends Controller
         return $arrayList;
     }
 
+    private function resourceDetail($data)
+    {
+        $getEmployeID =User::where('id',$data->ao_id)->first();
+        $ao = M_HrEmployee::where('ID', $getEmployeID->employee_id)->first();
+        $slik_approval = M_SlikApproval::where('CR_PROSPECT_ID',$data->id)->get();
+        $colData = DB::table('cr_prospect_col')->where('cr_prospect_id',$data->id )->get();
+        $personData = DB::table('cr_prospect_person')->where('cr_prospect_id',$data->id )->get();
+        $attachmentData = M_CrProspectAttachment::orderBy('type','asc')->where('cr_prospect_id',$data->id )->get();
+
+        $arrayList = [
+            'id' => $data->id,
+            'ao_id' => $data->ao_id,
+            'data_ao' =>  [
+                [
+                    'id_ao' => $ao->ID,
+                    'nama_ao' => $ao->NAMA,
+                ]
+            ],
+            'visit_date' => date('Y-m-d',strtotime($data->visit_date)),
+            'tujuan_kredit' => $data->tujuan_kredit,
+            'jenis_produk' => $data->jenis_produk,
+            'plafond' => $data->plafond,
+            'tenor' => $data->tenor,
+            'nama' => $data->nama,
+            'ktp' => $data->ktp,
+            'kk' => $data->kk,
+            'tgl_lahir' => $data->tgl_lahir,
+            'alamat' => $data->alamat,
+            'hp' => $data->hp,
+            'usaha' => $data->usaha,
+            'sector' => $data->sector,
+            'coordinate' => $data->coordinate,
+            'accurate' => $data->accurate,
+            'slik' => $data->slik,
+            'ktp_attachment' => [],
+            'kk_attachment' => [],
+            'buku_nikah' => [],
+            'prospek_jaminan' => [],
+            'prospek_penjamin' => [],
+            'prospek_attachment' => [],
+            'slik_approval' => $slik_approval
+        ];
+
+        foreach ($attachmentData as $list) {
+            if(strtolower($list->type) == 'ktp'){
+                $arrayList['ktp_attachment'][] = [
+                    'id' => $list->id,
+                    'type' => $list->type,
+                    'path' => URL::to('/').'/storage/'.$list->attachment_path,
+                ];
+            }
+        }
+
+        foreach ($attachmentData as $list) {
+            if(strtolower($list->type) == 'kk'){
+                $arrayList['kk_attachment'][] = [
+                    'id' => $list->id,
+                    'type' => $list->type,
+                    'path' => URL::to('/').'/storage/'.$list->attachment_path,
+                ];
+            }
+        }
+
+        foreach ($attachmentData as $list) {
+            if(strtolower($list->type) == 'buku nikah'){
+                $arrayList['buku_nikah'][] = [
+                    'id' => $list->id,
+                    'type' => $list->type,
+                    'path' => URL::to('/').'/storage/'.$list->attachment_path,
+                ];
+            }
+        }
+
+        foreach ($attachmentData as $list) {
+            if(str_contains($list->type, 'attachment')){
+                $arrayList['prospek_attachment'][] = [
+                    'id' => $list->id,
+                    'type' => $list->type,
+                    'path' => URL::to('/').'/storage/'.$list->attachment_path,
+                ];
+            }
+        }
+
+        foreach ($colData as $list) {
+            $arrayList['prospek_jaminan'][] = [
+                'id' => $list->id,
+                'type' => $list->type,
+                'collateral_value' => $list->collateral_value,
+                'description' => $list->description
+            ];
+        }
+
+        foreach ($personData as $list) {
+            $arrayList['prospek_penjamin'][] = [
+                'id' => $list->id,
+                "nama_jaminan" => $list->nama,
+                "ktp_jaminan" => $list->ktp,
+                "tgl_lahir_jaminan" => $list->tgl_lahir,
+                "pekerjaan_jaminan" => $list->pekerjaan,
+                "status_jaminan" => $list->status
+            ];    
+        }
+        
+        
+        return $arrayList;
+    }
+
     public function _validate($request)
     {
 
@@ -174,10 +282,11 @@ class CrprospectController extends Controller
     
             $crProspek = self::createCrProspek($request);
 
-            if ($request->slik === 1) {
+            if ($request->slik == "1") {
                 $data_array = [
                     'ID' => Uuid::uuid4()->toString(),
-                    'CR_PROSPECT_ID' => $request->id
+                    'CR_PROSPECT_ID' => $request->id,
+                    'SLIK_RESULT' => '0:untouched'
                 ];
             
                  M_SlikApproval::create($data_array);
@@ -353,7 +462,7 @@ class CrprospectController extends Controller
 
             DB::commit();
             ActivityLogger::logActivity($req,"Success",200);
-            return response()->json(['message' => 'Image upload successfully',"status" => 200,'response' =>'http://192.168.1.9:9000/storage/'. $image_path], 200);
+            return response()->json(['message' => 'Image upload successfully',"status" => 200,'response' => URL::to('/').'/storage/'. $image_path], 200);
         } catch (QueryException $e) {
             DB::rollback();
             ActivityLogger::logActivity($req,$e->getMessage(),409);
