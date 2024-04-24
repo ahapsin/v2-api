@@ -11,6 +11,7 @@ use App\Http\Controllers\API\{
     LogTemporaryLinkController,
     SlikApprovalController,
     SubordinateListController,
+    TextFileReader,
     UsersController
 };
 use App\Http\Controllers\API\Menu\MasterMenuController;
@@ -82,6 +83,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('getHierarchy', [SubordinateListController::class, 'getHierarchy']);
 
     Route::put('slikSpv', [SlikApprovalController::class, 'approveSpv']);
+
+    Route::post('text_file', [TextFileReader::class, 'uploadText']);
 });
 
 Route::post('assets', [AssetsController::class, 'storeAsset']);
