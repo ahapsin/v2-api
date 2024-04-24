@@ -185,31 +185,19 @@ class CrprospectController extends Controller
 
         foreach ($attachmentData as $list) {
             if(strtolower($list->type) == 'ktp'){
-                $arrayList['ktp_attachment'][] = [
-                    'id' => $list->id,
-                    'type' => $list->type,
-                    'path' => URL::to('/').'/storage/'.$list->attachment_path,
-                ];
+                $arrayList['ktp_attachment'] = URL::to('/').'/storage/'.$list->attachment_path;
             }
         }
 
         foreach ($attachmentData as $list) {
             if(strtolower($list->type) == 'kk'){
-                $arrayList['kk_attachment'][] = [
-                    'id' => $list->id,
-                    'type' => $list->type,
-                    'path' => URL::to('/').'/storage/'.$list->attachment_path,
-                ];
+                $arrayList['kk_attachment'] = URL::to('/').'/storage/'.$list->attachment_path;;
             }
         }
 
         foreach ($attachmentData as $list) {
             if(strtolower($list->type) == 'buku nikah'){
-                $arrayList['buku_nikah'][] = [
-                    'id' => $list->id,
-                    'type' => $list->type,
-                    'path' => URL::to('/').'/storage/'.$list->attachment_path,
-                ];
+                $arrayList['buku_nikah'] = URL::to('/').'/storage/'.$list->attachment_path;;
             }
         }
 
