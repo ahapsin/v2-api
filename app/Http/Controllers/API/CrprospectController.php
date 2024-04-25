@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\R_CrProspect;
+use App\Models\M_CreditType;
 use App\Models\M_CrProspect;
 use App\Models\M_CrProspectAttachment;
 use App\Models\M_CrProspectCol;
@@ -148,6 +149,7 @@ class CrprospectController extends Controller
         $colData = DB::table('cr_prospect_col')->where('cr_prospect_id',$data->id )->get();
         $personData = DB::table('cr_prospect_person')->where('cr_prospect_id',$data->id )->get();
         $attachmentData = M_CrProspectAttachment::orderBy('type','asc')->where('cr_prospect_id',$data->id )->get();
+        $product = M_CreditType::where('code',$data->jenis_produk)->first();
 
         $arrayList = [
             'id' => $data->id,
@@ -160,7 +162,14 @@ class CrprospectController extends Controller
             ],
             'visit_date' => date('Y-m-d',strtotime($data->visit_date)),
             'tujuan_kredit' => $data->tujuan_kredit,
-            'jenis_produk' => $data->jenis_produk,
+            'jenis_produk' => [
+                'code' => $product->code,
+                'name' => $product->codename,
+                'description' => $product->description,
+                'terms' => $product->terms,
+                'image_path' => $product->image_path != null ? URL::to('/').'/storage/'. $product->image_path : '',
+                'status' => $product->status,
+             ],
             'plafond' => $data->plafond,
             'tenor' => $data->tenor,
             'nama' => $data->nama,
