@@ -18,7 +18,6 @@ class R_CrProspect extends JsonResource
      */
     public function toArray(Request $request): array
     {
-
         $getEmployeID = User::where('id', $this->ao_id)->first();
         $ao = M_HrEmployee::where('ID', $getEmployeID->employee_id)->first();
         $slik_approval = DB::table('slik_approval')->where('CR_PROSPECT_ID', $this->id)->first();
@@ -26,15 +25,15 @@ class R_CrProspect extends JsonResource
         $data = [
             'id' => $this->id,
             'data_ao' =>
-            [
-                'id_ao' => $ao->ID,
-                'nama_ao' => $ao->NAMA,
-            ],
+                [
+                    'id_ao' => $ao->ID != ''?$ao->ID:'',
+                    'nama_ao' => $ao->NAMA != ''?$ao->NAMA:'',
+                ],
             'visit_date' => date('Y-m-d', strtotime($this->visit_date)),
             'nama_debitur' => $this->nama,
             'alamat' => $this->alamat,
             'hp' => $this->hp,
-            'slik' => $this->slik,
+            'slik' => $this->slik == "1" ? 'ya':"tidak",
             'slik_approval' => $slik_approval
         ];
 

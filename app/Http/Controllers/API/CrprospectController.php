@@ -74,6 +74,8 @@ class CrprospectController extends Controller
     {
         $getEmployeID =User::where('id',$data->ao_id)->first();
         $ao = M_HrEmployee::where('ID', $getEmployeID->employee_id)->first();
+        $colData = DB::table('cr_prospect_col')->where('cr_prospect_id',$data->id )->get();
+        $personData = DB::table('cr_prospect_person')->where('cr_prospect_id',$data->id )->get();
 
         $arrayList = [
             'id' => $data->id,
@@ -87,8 +89,8 @@ class CrprospectController extends Controller
             'visit_date' => date('Y-m-d',strtotime($data->visit_date)),
             'tujuan_kredit' => $data->tujuan_kredit,
             'jenis_produk' => $data->jenis_produk,
-            'plafond' => $data->plafond,
-            'tenor' => $data->tenor,
+            'plafond' => 'IDR '.number_format($data->plafond,0,",","."),
+            'tenor' => "$data->tenor",
             'nama' => $data->nama,
             'ktp' => $data->ktp,
             'kk' => $data->kk,
@@ -104,25 +106,16 @@ class CrprospectController extends Controller
             'prospek_person' => []
         ];
 
-        $colData = DB::table('cr_prospect_col')
-                        ->where('cr_prospect_id',$data->id )
-                        ->get();
-
         foreach ($colData as $list) {
             if ($list->cr_prospect_id === $data->id) {
                 $item['prospek_jaminan'][] = [
                     'id' => $list->id,
                     'type' => $list->type,
-                    'collateral_value' => $list->collateral_value,
+                    'collateral_value' => 'IDR '.number_format($list->collateral_value,0,",","."),
                     'description' => $list->description
                 ];
             }
         }
-
-
-        $personData = DB::table('cr_prospect_person')
-                        ->where('cr_prospect_id',$data->id )
-                        ->get();
 
         foreach ($personData as $list) {
             if ($list->cr_prospect_id === $data->id) {
@@ -130,7 +123,7 @@ class CrprospectController extends Controller
                     'id' => $list->id,
                     "nama_jaminan" => $list->nama,
                     "ktp_jaminan" => $list->ktp,
-                    "tgl_lahir_jaminan" => $list->tgl_lahir,
+                    "tgl_lahir_jaminan" => date('d-m-Y',strtotime($list->tgl_lahir)),
                     "pekerjaan_jaminan" => $list->pekerjaan,
                     "status_jaminan" => $list->status
                 ];
@@ -160,29 +153,31 @@ class CrprospectController extends Controller
                     'nama_ao' => $ao->NAMA,
                 ]
             ],
-            'visit_date' => date('Y-m-d',strtotime($data->visit_date)),
+            'visit_date' => date('d-m-Y',strtotime($data->visit_date)),
             'tujuan_kredit' => $data->tujuan_kredit,
             'jenis_produk' => [
+               [
                 'code' => $product->code,
                 'name' => $product->codename,
                 'description' => $product->description,
                 'terms' => $product->terms,
                 'image_path' => $product->image_path != null ? URL::to('/').'/storage/'. $product->image_path : '',
-                'status' => $product->status,
+                'status' => $product->status
+               ]
              ],
-            'plafond' => $data->plafond,
-            'tenor' => $data->tenor,
+            'plafond' => 'IDR '.number_format($data->plafond,0,",","."),
+            'tenor' => "$data->tenor",
             'nama' => $data->nama,
             'ktp' => $data->ktp,
             'kk' => $data->kk,
-            'tgl_lahir' => $data->tgl_lahir,
+            'tgl_lahir' => date('d-m-Y',strtotime($data->tgl_lahir)),
             'alamat' => $data->alamat,
             'hp' => $data->hp,
             'usaha' => $data->usaha,
             'sector' => $data->sector,
             'coordinate' => $data->coordinate,
             'accurate' => $data->accurate,
-            'slik' => $data->slik,
+            'slik' => $data->slik == "1" ? 'ya':"tidak",
             'ktp_attachment' => [],
             'kk_attachment' => [],
             'buku_nikah' => [],
@@ -224,7 +219,7 @@ class CrprospectController extends Controller
             $arrayList['prospek_jaminan'][] = [
                 'id' => $list->id,
                 'type' => $list->type,
-                'collateral_value' => $list->collateral_value,
+                'collateral_value' => 'IDR '.number_format($list->collateral_value,0,",","."),
                 'description' => $list->description
             ];
         }
@@ -234,7 +229,7 @@ class CrprospectController extends Controller
                 'id' => $list->id,
                 "nama_jaminan" => $list->nama,
                 "ktp_jaminan" => $list->ktp,
-                "tgl_lahir_jaminan" => $list->tgl_lahir,
+                "tgl_lahir_jaminan" => date('d-m-Y',strtotime($list->tgl_lahir)),
                 "pekerjaan_jaminan" => $list->pekerjaan,
                 "status_jaminan" => $list->status
             ];    

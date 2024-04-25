@@ -26,7 +26,7 @@ class LogSendOutController extends Controller
     public function filter(Request $request)
     {
         try {
-            $data = M_LogSendOut::where('status', 'new')->get();
+            $data = M_LogSendOut::whereNull('status')->get();
         
             return response()->json(['message' => 'OK', "status" => 200, 'response' => $data], 200);
         } catch (\Exception $e) {

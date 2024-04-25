@@ -3,6 +3,7 @@
 use App\Http\Controllers\API\{
     AssetsController,
     AuthController,
+    BranchController,
     CreditTypeController,
     CrprospectController,
     CustomerAccountController,
@@ -23,7 +24,7 @@ use Illuminate\Support\Facades\Route;
 
 //Login Authenticate
 Route::post('auth/login', [AuthController::class, 'login'])->name('login');
-Route::post('auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+Route::get('auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 
 Route::post('payment', [PaymentDumpController::class, 'index']);
 Route::post('historyAcc', [HistoryAccController::class, 'index']);
@@ -35,9 +36,6 @@ Route::get('waweb/task', [LogSendOutController::class, 'filter']);
 
 Route::get('customerAccount', [CustomerAccountController::class, 'index']);
 
-//SLIK PROGRESS
-
-//! create temporary signed url
 Route::post('createurl', [SlikApprovalController::class, 'creaturl']);
 //? check incoming url signed
 
@@ -87,6 +85,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('slikSpv', [SlikApprovalController::class, 'approveSpv']);
 
     Route::post('text_file', [TextFileReader::class, 'uploadText']);
+
+    Route::get('cabang', [BranchController::class, 'index']);
+    Route::get('cabang/{id}', [BranchController::class, 'detail']);
+    Route::post('cabang', [BranchController::class, 'store']);
+    Route::put('cabang', [BranchController::class, 'update']);
+    Route::delete('cabang', [BranchController::class, 'destroy']);
 });
 
 Route::post('assets', [AssetsController::class, 'storeAsset']);
