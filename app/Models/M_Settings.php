@@ -6,34 +6,24 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class M_Branch extends Model
+class M_Settings extends Model
 {
     use HasFactory;
-    protected $table = 'branch';
+    protected $table = 'environtment';
     protected $fillable = [
         'ID',
-        'CODE',
+        'KEY',
         'NAME',
-        'ADDRESS',
-        'LOCATION',
-        'PHONE_1',
-        'PHONE_2',
-        'PHONE_3',
-        'DESCR',
-        'STATUS',
-        'CREATE_DATE',
-        'CREATE_USER',
-        'MOD_DATE',
-        'MOD_USER',
-        'DELETED_BY',
-        'DELETED_AT',
-        'VERSION'
+        'VAL',
+        'DESCRIPTION'
     ];
+    
     protected $guarded = [];
     public $incrementing = false;
     protected $keyType = 'string';
     protected $primaryKey = 'ID';
     public $timestamps = false;
+
     protected static function boot()
     {
         parent::boot();

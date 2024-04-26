@@ -8,8 +8,10 @@ use App\Http\Controllers\API\{
     CrprospectController,
     CustomerAccountController,
     DetailProfileController,
+    HrEmployeeController,
     LogSendOutController,
     LogTemporaryLinkController,
+    SettingsController,
     SlikApprovalController,
     SubordinateListController,
     TextFileReader,
@@ -19,6 +21,7 @@ use App\Http\Controllers\API\Menu\MasterMenuController;
 use App\Http\Controllers\API\Menu\MasterRoleController;
 use App\Http\Controllers\Laporan\HistoryAccController;
 use App\Http\Controllers\Laporan\PaymentDumpController;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -47,9 +50,9 @@ Route::get('kunjungan/detailApproval/{id}', [CrprospectController::class, 'detai
     ->middleware('signed');
 
 //! update approval by action user
-Route::put('approval', [SlikApprovalController::class,'approveCustomer']);
+Route::put('approval', [SlikApprovalController::class, 'approveCustomer']);
 
-Route::put('editusers', [UsersController::class,'update']);
+Route::put('editusers', [UsersController::class, 'update']);
 
 Route::post('createUser', [UsersController::class, 'store']);
 
@@ -57,11 +60,20 @@ Route::get('approval/{id}', [SlikApprovalController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
-    Route::get('menu', [MasterMenuController::class, 'index']);
-    Route::post('getSubMenu', [MasterMenuController::class, 'getSubMenu']);
-    Route::get('role', [MasterRoleController::class, 'index']);
-    Route::post('menu', [MasterMenuController::class, 'store']);
-    Route::post('role', [MasterRoleController::class, 'store']);
+    Route::apiResource('menu', MasterMenuController::class);
+    Route::get('menu-sub-list', [MasterMenuController::class, 'menuSubList']);
+
+    //Route Group Master Users
+    Route::apiResource('users', UsersController::class);
+
+    //Route Group Master Users
+    Route::apiResource('settings', SettingsController::class);
+
+    //Route Group Master Branch
+    Route::apiResource('cabang', BranchController::class);
+
+    //Route Group Master Karyawan
+    Route::apiResource('karyawan', HrEmployeeController::class);
 
     //Detail Profile
     Route::get('me', [DetailProfileController::class, 'index']);
@@ -85,12 +97,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('slikSpv', [SlikApprovalController::class, 'approveSpv']);
 
     Route::post('text_file', [TextFileReader::class, 'uploadText']);
-
-    Route::get('cabang', [BranchController::class, 'index']);
-    Route::get('cabang/{id}', [BranchController::class, 'detail']);
-    Route::post('cabang', [BranchController::class, 'store']);
-    Route::put('cabang', [BranchController::class, 'update']);
-    Route::delete('cabang', [BranchController::class, 'destroy']);
 });
 
 Route::post('assets', [AssetsController::class, 'storeAsset']);
