@@ -60,7 +60,7 @@ class MasterMenuController extends Controller
     { 
         DB::beginTransaction();
         try {
-            $validator = $req->validate([
+            $req->validate([
                 'menu_name' => 'required|string',
                 'route' => 'required|string',
                 'order' => 'numeric',
@@ -69,6 +69,12 @@ class MasterMenuController extends Controller
 
             $req['status'] = 'Active';
             $req['created_by'] = $req->user()->id;
+
+            if($req->parent == ""){
+                $req['parent'] = 0;
+            }else{
+                $req['parent'] = $req->parent;
+            }
 
             $create =  M_MasterMenu::create($req->all());
             DB::commit();
