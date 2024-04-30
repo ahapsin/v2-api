@@ -26,10 +26,10 @@ class TextFileReader extends Controller
             $slik_fas = $convert->individual->fasilitas->kreditPembiayan;
 
             // self::insert_slik_debitur($convert);
-            // $dataa=  self::insert_slik_fasilitas($convert);
+            $dataa=  self::insert_slik_fasilitas($convert);
 
             DB::commit();
-            return response()->json(['message' => 'File upload successfully',"status" => 200,'response'=> $slik_fas], 200);
+            return response()->json(['message' => 'File upload successfully',"status" => 200,'response'=> $dataa], 200);
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
@@ -221,10 +221,14 @@ class TextFileReader extends Controller
             ];
 
             $last_id_fasilitas = M_SlikFasilitas::create($data_array);
+
+            self::insert_slik_agunan($last_id_fasilitas);
         }
     }
 
     private function insert_slik_agunan($last_id){
+
+        return $last_id;
 
     // if (!empty($value->agunan)) {
 
@@ -264,4 +268,5 @@ class TextFileReader extends Controller
 
     //         } 
     // }
+    }
 }
