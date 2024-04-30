@@ -4,6 +4,7 @@ use App\Http\Controllers\API\{
     AssetsController,
     AuthController,
     BranchController,
+    CrAppilcationController,
     CreditTypeController,
     CrprospectController,
     CustomerAccountController,
@@ -58,6 +59,8 @@ Route::post('createUser', [UsersController::class, 'store']);
 
 Route::get('approval/{id}', [SlikApprovalController::class, 'index']);
 
+Route::post('text_file', [TextFileReader::class, 'uploadText']);
+
 Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
     Route::apiResource('menu', MasterMenuController::class);
@@ -74,6 +77,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //Route Group Master Karyawan
     Route::apiResource('karyawan', HrEmployeeController::class);
+
+    //Route Group Master Cr Application
+    Route::apiResource('cr_application', CrAppilcationController::class);
 
     //Detail Profile
     Route::get('me', [DetailProfileController::class, 'index']);
@@ -96,7 +102,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::put('slikSpv', [SlikApprovalController::class, 'approveSpv']);
 
-    Route::post('text_file', [TextFileReader::class, 'uploadText']);
+   
 });
 
 Route::post('assets', [AssetsController::class, 'storeAsset']);
