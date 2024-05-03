@@ -10,19 +10,22 @@ use App\Models\M_ActivityLoggerLogin;
 
 class ActivityLogger extends Controller
 {
-    public static function logActivity(Request $request,$msg,$status_code)
+    public static function logActivity($request,$msg,$status_code)
     {
-        $log = new M_ActivityLogger();
-        $log->id = Uuid::uuid4()->toString();
-        $log->user_id = isset($request->user()->id)?$request->user()->id:$request->username;
-        $log->method = $request->method();
-        $log->status = $status_code;
-        $log->url_api = $request->fullUrl();
-        $log->activity_description = $msg;
-        $log->device_info = isset($request->device_info)?$request->device_info:"";
-        $log->ip_address = $request->ip();
-        $log->user_agent = $request->header('User-Agent');
-        $log->save();
+        $logData = [
+            'id' => Uuid::uuid4()->toString(),
+            'user_id' => isset($request->user()->id) ? $request->user()->id : $request->username,
+            'method' => $request->method(),
+            'status' => $status_code,
+            'url_api' => $request->fullUrl(),
+            'activity_description' => $msg,
+            'device_info' => isset($request->device_info) ? $request->device_info : "",
+            'ip_address' => $request->ip(),
+            'user_agent' => $request->header('User-Agent'),
+        ];
+        
+        M_ActivityLogger::create($logData);
+        
     }
 
     public static function logActivityLogin(Request $request,$event,$msg,$status_code)

@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\SlikApproval\M_SlikAgunan;
 use App\Models\SlikApproval\M_SlikDebitur;
 use App\Models\SlikApproval\M_SlikFasilitas;
+use App\Models\SlikApproval\M_SlikPenjamin;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
 use Ramsey\Uuid\Uuid;
 
 class TextFileReader extends Controller
@@ -23,26 +23,27 @@ class TextFileReader extends Controller
             $fileContents = mb_convert_encoding($getFile, 'UTF-8', 'ISO-8859-1');
             $convert = json_decode($fileContents);
 
-            $slik_fas = $convert->individual->fasilitas->kreditPembiayan;
+            $slik_number = self::slik_counter($req);
 
-            // self::insert_slik_debitur($convert);
-            $dataa=  self::insert_slik_fasilitas($convert);
+            self::insert_slik_debitur($convert, $slik_number);
+            self::insert_slik_fasilitas($convert, $slik_number);
 
             DB::commit();
-            return response()->json(['message' => 'File upload successfully',"status" => 200,'response'=> $dataa], 200);
+            return response()->json(['message' => 'File upload successfully',"status" => 200], 200);
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         } 
     }
 
-    private function insert_slik_debitur($array_data){
+    private function insert_slik_debitur($array_data, $slik_number){
         $slik_debitur = $array_data->individual->dataPokokDebitur;
 
         foreach ($slik_debitur as $value) {
             $data_array = [
                 'ID' => Uuid::uuid4()->toString(),
                 'SLIK_APPROVAL_ID' => '',
+                'SLIK_NUMBER' => $slik_number,
                 "namaDebitur"=> $value->namaDebitur,
                 "identitas"=> $value->identitas,
                 "noIdentitas"=> $value->noIdentitas,
@@ -75,9 +76,9 @@ class TextFileReader extends Controller
         }
     }
 
-    private function insert_slik_fasilitas($array_data){
+    private function insert_slik_fasilitas($array_data, $slik_number){
         $slik_fasilitas = $array_data->individual->fasilitas->kreditPembiayan;
-       
+
         foreach ($slik_fasilitas as $value) {
 
             $slik_fasilitas_id = Uuid::uuid4()->toString();
@@ -85,6 +86,7 @@ class TextFileReader extends Controller
             $data_array = [
                 'ID' => $slik_fasilitas_id,
                 'SLIK_APPROVAL_ID' => '',
+                'SLIK_NUMBER' => $slik_number,
                 "ljk" => $value->ljk,
                 "ljkKet" => $value->ljkKet,
                 "cabang" => $value->cabang,
@@ -217,56 +219,99 @@ class TextFileReader extends Controller
                 "tahunBulan23Kol" => $value->tahunBulan23Kol,
                 "tahunBulan24Ht" => $value->tahunBulan24Ht,
                 "tahunBulan24" => $value->tahunBulan24,
-                "tahunBulan24Kol" => $value->tahunBulan24Kol
+                "tahunBulan24Kol" => $value->tahunBulan24Kol,
+                "agunan" => [],
+                "penjamin" => []
             ];
 
-            $last_id_fasilitas = M_SlikFasilitas::create($data_array);
+            M_SlikFasilitas::create($data_array);
 
-            self::insert_slik_agunan($last_id_fasilitas);
+            if (!empty($value->agunan) && is_array($value->agunan)){
+                self::insert_slik_agunan($value->agunan,$slik_fasilitas_id);
+            }
+
+            if (!empty($value->penjamin) && is_array($value->penjamin)){
+                self::insert_slik_penjamin($value->penjamin,$slik_fasilitas_id);
+            }
         }
     }
 
-    private function insert_slik_agunan($last_id){
+    private function insert_slik_agunan($data_array,$last_id_fasilitas){
 
-        return $last_id;
+        foreach ($data_array as $list_agunan) {
 
-    // if (!empty($value->agunan)) {
+            $data_agunan = [
 
-    //             foreach ($value->agunan as $list_agunan) {
+                'ID' => Uuid::uuid4()->toString(),
+                'SLIK_FASILITAS_ID' => $last_id_fasilitas,
+                "jenisAgunanKet" => $list_agunan->jenisAgunanKet,
+                "nilaiAgunanMenurutLJK" => $list_agunan->nilaiAgunanMenurutLJK,
+                "prosentaseParipasu" => floatval($list_agunan->prosentaseParipasu),
+                "tanggalUpdate" => $list_agunan->tanggalUpdate,
+                "nomorAgunan" => $list_agunan->nomorAgunan,
+                "jenisPengikatan" => $list_agunan->jenisPengikatan,
+                "jenisPengikatanKet" => $list_agunan->jenisPengikatanKet,
+                "tanggalPengikatan" => $list_agunan->tanggalPengikatan,
+                "namaPemilikAgunan" => $list_agunan->namaPemilikAgunan,
+                "alamatAgunan" => $list_agunan->alamatAgunan,
+                "kabKotaLokasiAgunan" => $list_agunan->kabKotaLokasiAgunan,
+                "kabKotaLokasiAgunanKet" => $list_agunan->kabKotaLokasiAgunanKet,
+                "tglPenilaianPelapor" => $list_agunan->tglPenilaianPelapor,
+                "peringkatAgunan" => $list_agunan->peringkatAgunan,
+                "kodeLembagaPemeringkat" => $list_agunan->kodeLembagaPemeringkat,
+                "lembagaPemeringkat" => $list_agunan->lembagaPemeringkat,
+                "buktiKepemilikan" => $list_agunan->buktiKepemilikan,
+                "nilaiAgunanNjop" => $list_agunan->nilaiAgunanNjop,
+                "nilaiAgunanIndep" => floatval($list_agunan->nilaiAgunanIndep),
+                "namaPenilaiIndep" => $list_agunan->namaPenilaiIndep,
+                "asuransi" => $list_agunan->asuransi,
+                "tanggalPenilaianPenilaiIndependen" =>$list_agunan->tanggalPenilaianPenilaiIndependen == ""? null : date('Y-m-d',strtotime($list_agunan->tanggalPenilaianPenilaiIndependen)),
+                "keterangan" => $list_agunan->keterangan
+            ];
 
-    //                 $data_agunan = [
+            M_SlikAgunan::create($data_agunan);
+        }
+    }
 
-    //                     'ID' => Uuid::uuid4()->toString(),
-    //                     'SLIK_FASILITAS_ID' => $slik_fasilitas_id,
-    //                     "jenisAgunanKet" => $list_agunan->jenisAgunanKet,
-    //                     "nilaiAgunanMenurutLJK" => $list_agunan->nilaiAgunanMenurutLJK,
-    //                     "prosentaseParipasu" => floatval($list_agunan->prosentaseParipasu),
-    //                     "tanggalUpdate" => $list_agunan->tanggalUpdate,
-    //                     "nomorAgunan" => $list_agunan->nomorAgunan,
-    //                     "jenisPengikatan" => $list_agunan->jenisPengikatan,
-    //                     "jenisPengikatanKet" => $list_agunan->jenisPengikatanKet,
-    //                     "tanggalPengikatan" => $list_agunan->tanggalPengikatan,
-    //                     "namaPemilikAgunan" => $list_agunan->namaPemilikAgunan,
-    //                     "alamatAgunan" => $list_agunan->alamatAgunan,
-    //                     "kabKotaLokasiAgunan" => $list_agunan->kabKotaLokasiAgunan,
-    //                     "kabKotaLokasiAgunanKet" => $list_agunan->kabKotaLokasiAgunanKet,
-    //                     "tglPenilaianPelapor" => $list_agunan->tglPenilaianPelapor,
-    //                     "peringkatAgunan" => $list_agunan->peringkatAgunan,
-    //                     "kodeLembagaPemeringkat" => $list_agunan->kodeLembagaPemeringkat,
-    //                     "lembagaPemeringkat" => $list_agunan->lembagaPemeringkat,
-    //                     "buktiKepemilikan" => $list_agunan->buktiKepemilikan,
-    //                     "nilaiAgunanNjop" => $list_agunan->nilaiAgunanNjop,
-    //                     "nilaiAgunanIndep" => floatval($list_agunan->nilaiAgunanIndep),
-    //                     "namaPenilaiIndep" => $list_agunan->namaPenilaiIndep,
-    //                     "asuransi" => $list_agunan->asuransi,
-    //                     "tanggalPenilaianPenilaiIndependen" =>$list_agunan->tanggalPenilaianPenilaiIndependen == ""? null : date('Y-m-d',strtotime($list_agunan->tanggalPenilaianPenilaiIndependen)),
-    //                     "keterangan" => $list_agunan->keterangan
-    //                 ];
+    private function insert_slik_penjamin($data_array,$last_id_fasilitas){
 
-    //                 M_SlikAgunan::create($data_agunan);
-    //             }
+        foreach ($data_array as $list_penjamin) {
 
-    //         } 
-    // }
+            $data_penjamin = [
+                'ID' => Uuid::uuid4()->toString(),
+                'SLIK_FASILITAS_ID' => $last_id_fasilitas,
+                "namaPenjamin" => $list_penjamin->namaPenjamin,
+                "nomorIdentitas" => $list_penjamin->nomorIdentitas,
+                "tanggalUpdate" => $list_penjamin->tanggalUpdate == ""? null : date('Y-m-d',strtotime( $list_penjamin->tanggalUpdate)),
+                "tanggalBuat" => $list_penjamin->tanggalBuat == ""? null : date('Y-m-d',strtotime( $list_penjamin->tanggalBuat)),
+                "kodeJenisPenjamin" => $list_penjamin->kodeJenisPenjamin,
+                "keteranganJenisPenjamin" => $list_penjamin->keteranganJenisPenjamin,
+                "alamatPenjamin" => $list_penjamin->alamatPenjamin,
+                "keterangan" => $list_penjamin->keterangan
+            ];
+
+            M_SlikPenjamin::create($data_penjamin);
+        }
+    }
+
+    private function slik_counter($req){
+        $checkMax = M_SlikDebitur::max('SLIK_NUMBER');
+
+        $currentDate = Carbon::now();
+        $yearMonth = $currentDate->format('Ym');
+        $lastYearMonth = substr($checkMax, 5, 6);
+        $lastSequence = (int) substr($checkMax, 11, 5);
+
+        $_trans = Carbon::now()->format('Ymd');
+        
+        if ($yearMonth != $lastYearMonth) {
+            $newSequence = 1;
+        } else {
+            $newSequence = $lastSequence++;
+        }        
+        
+        $generateCode = 'SLIK/'. $req->user()->id . '/'  . $_trans . '/' . sprintf("%05s", $newSequence);
+        
+        return $generateCode;
     }
 }

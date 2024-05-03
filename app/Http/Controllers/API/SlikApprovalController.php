@@ -117,15 +117,15 @@ class SlikApprovalController extends Controller
 
     
             DB::commit();
-            ActivityLogger::logActivity($request,"Success",200);
+            // ActivityLogger::logActivity($request,"Success",200);
             return response()->json(['message' => 'Slik Approval Updated successfully',"status" => 200], 200);
         } catch (ModelNotFoundException $e) {
             DB::rollback();
-            ActivityLogger::logActivity($request,'Data Not Found',404);
+            // ActivityLogger::logActivity($request,'Data Not Found',404);
             return response()->json(['message' => 'Data Not Found',"status" => 404], 404);
         } catch (\Exception $e) {
             DB::rollback();
-            ActivityLogger::logActivity($request,$e->getMessage(),500);
+            // ActivityLogger::logActivity($request,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
     }
@@ -159,15 +159,15 @@ class SlikApprovalController extends Controller
             $check->update($data_array);
     
             DB::commit();
-            ActivityLogger::logActivity($request,"Success",200);
+            // ActivityLogger::logActivity($request,"Success",200);
             return response()->json(['message' => 'Slik Approval Updated successfully',"status" => 200], 200);
         } catch (ModelNotFoundException $e) {
             DB::rollback();
-            ActivityLogger::logActivity($request,'Data Not Found',404);
+            // ActivityLogger::logActivity($request,'Data Not Found',404);
             return response()->json(['message' => 'Data Not Found',"status" => 404], 404);
         } catch (\Exception $e) {
             DB::rollback();
-            ActivityLogger::logActivity($request,$e->getMessage(),500);
+            // ActivityLogger::logActivity($request,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
     }

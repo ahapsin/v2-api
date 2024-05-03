@@ -61,15 +61,15 @@ class LogSendOutController extends Controller
             M_LogSendOut::create($data_array);
     
             DB::commit();
-            ActivityLogger::logActivity($request,"Success",200);
+            // ActivityLogger::logActivity($request,"Success",200);
             return response()->json(['message' => 'Sendout created successfully',"status" => 200], 200);
         } catch (QueryException $e) {
             DB::rollback();
-            ActivityLogger::logActivity($request,$e->getMessage(),409);
+            // ActivityLogger::logActivity($request,$e->getMessage(),409);
             return response()->json(['message' => $e->getMessage(),"status" => 409], 409);
         } catch (\Exception $e) {
             DB::rollback();
-            ActivityLogger::logActivity($request,$e->getMessage(),500);
+            // ActivityLogger::logActivity($request,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
     }
@@ -88,15 +88,15 @@ class LogSendOutController extends Controller
             $getSendOut->update($data_array);
     
             DB::commit();
-            ActivityLogger::logActivity($request,"Success",200);
+            // ActivityLogger::logActivity($request,"Success",200);
             return response()->json(['message' => 'Sendout updated successfully',"status" => 200], 200);
         } catch (ModelNotFoundException $e) {
             DB::rollback();
-            ActivityLogger::logActivity($request,'Not Found Data',404);
+            // ActivityLogger::logActivity($request,'Not Found Data',404);
             return response()->json(['message' => 'Not Found Data',"status" => 404], 404);
         } catch (\Exception $e) {
             DB::rollback();
-            ActivityLogger::logActivity($request,$e->getMessage(),500);
+            // ActivityLogger::logActivity($request,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
     }

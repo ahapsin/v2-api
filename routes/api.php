@@ -15,6 +15,7 @@ use App\Http\Controllers\API\{
     SettingsController,
     SlikApprovalController,
     SubordinateListController,
+    TaskController,
     TextFileReader,
     UsersController
 };
@@ -50,6 +51,8 @@ Route::get('kunjungan/detailApproval/{id}', [CrprospectController::class, 'detai
     ->name('approve_slik')
     ->middleware('signed');
 
+Route::apiResource('cabang', BranchController::class);
+
 //! update approval by action user
 Route::put('approval', [SlikApprovalController::class, 'approveCustomer']);
 
@@ -60,6 +63,8 @@ Route::post('createUser', [UsersController::class, 'store']);
 Route::get('approval/{id}', [SlikApprovalController::class, 'index']);
 
 Route::post('text_file', [TextFileReader::class, 'uploadText']);
+
+
 
 Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
@@ -73,13 +78,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('settings', SettingsController::class);
 
     //Route Group Master Branch
-    Route::apiResource('cabang', BranchController::class);
+   
 
     //Route Group Master Karyawan
     Route::apiResource('karyawan', HrEmployeeController::class);
 
     //Route Group Master Cr Application
     Route::apiResource('cr_application', CrAppilcationController::class);
+
+    //Route Group Master Pusher Notify
+    Route::apiResource('task', TaskController::class);
 
     //Detail Profile
     Route::get('me', [DetailProfileController::class, 'index']);
@@ -102,7 +110,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::put('slikSpv', [SlikApprovalController::class, 'approveSpv']);
 
-   
+    // Route::post('text_file', [TextFileReader::class, 'uploadText']);
 });
 
 Route::post('assets', [AssetsController::class, 'storeAsset']);

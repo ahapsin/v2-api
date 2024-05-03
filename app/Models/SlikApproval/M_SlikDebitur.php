@@ -13,6 +13,7 @@ class M_SlikDebitur extends Model
     protected $fillable = [
        'ID',
        'SLIK_APPROVAL_ID',
+       'SLIK_NUMBER',
        'namaDebitur',
        'identitas',
        'noIdentitas',

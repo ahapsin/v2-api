@@ -26,10 +26,10 @@ class MasterMenuController extends Controller
 
             $dto = R_MasterMenu::collection($data);
 
-            ActivityLogger::logActivity($req,"Success",200);
+            // $test = ActivityLogger::logActivity($req,"Success",200);
             return response()->json(['message' => 'OK', "status" => 200, 'response' => $dto], 200);
         } catch (\Exception $e) {
-            ActivityLogger::logActivity($req,$e->getMessage(),500);
+            // ActivityLogger::logActivity($req,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
     }
@@ -45,13 +45,13 @@ class MasterMenuController extends Controller
 
             $dto = R_MasterMenu::collection([$check]);
 
-            ActivityLogger::logActivity($req,"Success",200);
+            // ActivityLogger::logActivity($req,"Success",200);
             return response()->json(['message' => 'OK',"status" => 200,'response' => $dto], 200);
         } catch (ModelNotFoundException $e) {
-            ActivityLogger::logActivity($req,'Data Not Found',404);
+            // ActivityLogger::logActivity($req,'Data Not Found',404);
             return response()->json(['message' => 'Data Not Found',"status" => 404], 404);
         } catch (\Exception $e) {
-            ActivityLogger::logActivity($req,$e->getMessage(),500);
+            // ActivityLogger::logActivity($req,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
     }
@@ -78,15 +78,16 @@ class MasterMenuController extends Controller
 
             $create =  M_MasterMenu::create($req->all());
             DB::commit();
-            ActivityLogger::logActivity($req,"Success",200);
+            // ActivityLogger::logActivity($req,"Success",200);
+            
             return response()->json(['message' => 'Master Menu created successfully', "status" => 200, 'response' => $create], 200);
         } catch (QueryException $e) {
             DB::rollback();
-            ActivityLogger::logActivity($req,$e->getMessage(),409);
+            // ActivityLogger::logActivity($req,$e->getMessage(),409);
             return response()->json(['message' => $e->getMessage(), "status" => 409], 409);
         } catch (\Exception $e) {
             DB::rollback();
-            ActivityLogger::logActivity($req,$e->getMessage(),500);
+            // ActivityLogger::logActivity($req,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(), "status" => 500], 500);
         }
     }
@@ -102,15 +103,15 @@ class MasterMenuController extends Controller
 
             $menu->update($req->all());
             DB::commit();
-            ActivityLogger::logActivity($req,"Success",200);
+            // ActivityLogger::logActivity($req,"Success",200);
             return response()->json(['message' => 'Master Menu updated successfully', "status" => 200], 200);
         } catch (ModelNotFoundException $e) {
             DB::rollback();
-            ActivityLogger::logActivity($req,'Data Not Found',404);
+            // ActivityLogger::logActivity($req,'Data Not Found',404);
             return response()->json(['message' => 'Data Not Found', "status" => 404], 404);
         } catch (\Exception $e) {
             DB::rollback();
-            ActivityLogger::logActivity($req,$e->getMessage(),500);
+            // ActivityLogger::logActivity($req,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(), "status" => 500], 500);
         }
     }
@@ -130,15 +131,15 @@ class MasterMenuController extends Controller
             $menu->update($update);
             
             DB::commit();
-            ActivityLogger::logActivity($req,"Success",200);
+            // ActivityLogger::logActivity($req,"Success",200);
             return response()->json(['message' => 'Master Menu deleted successfully', "status" => 200], 200);
         } catch (ModelNotFoundException $e) {
             DB::rollback();
-            ActivityLogger::logActivity($req,'Data Not Found',404);
+            // ActivityLogger::logActivity($req,'Data Not Found',404);
             return response()->json(['message' => 'Data Not Found', "status" => 404], 404);
         } catch (\Exception $e) {
             DB::rollback();
-            ActivityLogger::logActivity($req,$e->getMessage(),500);
+            // ActivityLogger::logActivity($req,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(), "status" => 500], 500);
         }
     }
@@ -150,7 +151,7 @@ class MasterMenuController extends Controller
         
             return response()->json(['message' => 'OK', "status" => 200, 'response' => M_MasterMenu::buildMenuArray($data)], 200);
         } catch (\Exception $e) {
-            ActivityLogger::logActivity($req,$e->getMessage(),500);
+            // ActivityLogger::logActivity($req,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
     }

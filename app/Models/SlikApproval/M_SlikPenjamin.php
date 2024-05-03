@@ -12,6 +12,7 @@ class M_SlikPenjamin extends Model
     protected $table = 'slik_penjamin';
     protected $fillable = [
         'ID',
+        'SLIK_FASILITAS_ID',
         'namaPenjamin',
         'nomorIdentitas',
         'tanggalUpdate',

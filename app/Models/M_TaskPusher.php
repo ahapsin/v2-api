@@ -1,34 +1,23 @@
 <?php
 
-namespace App\Models\CrApplication;
+namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class M_CrApplication extends Model
+class M_TaskPusher extends Model
 {
     use HasFactory;
-    protected $table = 'cr_application';
+    protected $table = 'task_pusher';
+
     protected $fillable = [
        'ID',
-       'CR_PROSPECT_ID',
-       'CLEAR_FLAG',
-       'APPLICATION_NUMBER',
-       'CUST_CODE',
-       'ACCOUNT_NUMBER',
-       'SUBMISSION_FLAG',
-       'SUBMISSION_VALUE',
-       'PERIOD',
-       'CREDIT_TYPE',
-       'INTENDED_FOR',
-       'TERM_OF_PAYMENT',
-       'INSTALLMENT_TYPE',
-       'VERSION',
-       'CREATE_DATE',
-       'CREATE_USER',
-       'MOD_DATE',
-       'MOD_USER'
+       'TASK_ID',
+       'USER_ID',
+       'CREATED',
+       'LAST_UPDATE',
+       'STATUS'
     ];
     
     protected $guarded = [];

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\M_CrProspect;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Auth;
@@ -20,7 +21,6 @@ class R_CrProspect extends JsonResource
     {
         $getEmployeID = User::where('id', $this->ao_id)->first();
         $ao = M_HrEmployee::where('ID', $getEmployeID->employee_id)->first();
-        $slik_approval = DB::table('slik_approval')->where('CR_PROSPECT_ID', $this->id)->first();
 
         $data = [
             'id' => $this->id,
@@ -34,7 +34,7 @@ class R_CrProspect extends JsonResource
             'alamat' => $this->alamat,
             'hp' => $this->hp,
             'slik' => $this->slik == "1" ? 'ya':"tidak",
-            'slik_approval' => $slik_approval
+            'slik_approval' => ''
         ];
 
 

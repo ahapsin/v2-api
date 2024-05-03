@@ -12,6 +12,7 @@ class M_SlikAgunan extends Model
     protected $table = 'slik_agunan';
     protected $fillable = [
         'ID',
+        'SLIK_FASILITAS_ID',
         'jenisAgunanKet',
         'nilaiAgunanMenurutLJK',
         'prosentaseParipasu',

@@ -13,6 +13,7 @@ class M_SlikFasilitas extends Model
     protected $fillable = [
         'ID',
         'SLIK_APPROVAL_ID',
+        'SLIK_NUMBER',
         'ljk',
         'ljkKet',
         'cabang',

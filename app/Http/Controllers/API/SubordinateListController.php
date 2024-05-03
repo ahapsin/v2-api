@@ -19,10 +19,10 @@ class SubordinateListController extends Controller
 
             return response()->json(['message' => 'OK',"status" => 200,'response' => $data], 200);
         } catch (QueryException $e) {
-            ActivityLogger::logActivity($request,$e->getMessage(),409);
+            // ActivityLogger::logActivity($request,$e->getMessage(),409);
             return response()->json(['message' => $e->getMessage(),"status" => 409], 409);
         } catch (\Exception $e) {
-            ActivityLogger::logActivity($request,$e->getMessage(),500);
+            // ActivityLogger::logActivity($request,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
     }
@@ -37,10 +37,10 @@ class SubordinateListController extends Controller
             
             return response()->json(['message' => 'Ok', "status" => 200, 'response' =>  $dataList], 200);
         } catch (QueryException $e) {
-            ActivityLogger::logActivity($request,$e->getMessage(),409);
+            // ActivityLogger::logActivity($request,$e->getMessage(),409);
             return response()->json(['message' => $e->getMessage(),"status" => 409], 409);
         } catch (\Exception $e) {
-            ActivityLogger::logActivity($request,$e->getMessage(),500);
+            // ActivityLogger::logActivity($request,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
     }
