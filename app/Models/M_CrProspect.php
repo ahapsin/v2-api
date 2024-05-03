@@ -47,15 +47,15 @@ class M_CrProspect extends Model
         });
     }
 
-    // public static function slik_approval($id){
+    public static function slik_approval($id){
 
-    //     $query = self::select('slik_approval.SLIK_RESULT')
-    //                         ->leftJoin('slik_approval', 'slik_approval.CR_PROSPECT_ID', '=', 'cr_prospect.id')
-    //                         ->where('cr_prospect.id', $id)
-    //                         ->get();
+        $query = self::select('slik_approval.SLIK_RESULT')
+                            ->leftJoin('slik_approval', 'slik_approval.CR_PROSPECT_ID', '=', 'cr_prospect.id')
+                            ->where('cr_prospect.id', $id)
+                            ->get();
 
-    //     return $query;
-    // }
+        return $query;
+    }
 
     public static function prospek_jaminan()
     {

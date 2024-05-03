@@ -23,14 +23,14 @@ class CrprospectController extends Controller
 {
     public function index(Request $req){
         try {
-            $ao_id = $req->user()->id;
-            $data =  M_CrProspect::whereNull('deleted_at')->where('ao_id', $ao_id)->get();
-            // $slik_approval = M_SlikApproval::all();
+            // $ao_id = $req->user()->id;
+            // $data =  M_CrProspect::whereNull('deleted_at')->where('ao_id', $ao_id)->get();
+            $slik_approval = DB::table('slik_approval')->get();
 
-            $dto = R_CrProspect::collection($data);
+            // $dto = R_CrProspect::collection($data);
 
             // ActivityLogger::logActivity($req,"Success",200);
-            return response()->json(['message' => 'OK',"status" => 200,'response' => $dto], 200);
+            return response()->json(['message' => 'OK',"status" => 200,'response' => $slik_approval], 200);
         } catch (QueryException $e) {
             // ActivityLogger::logActivity($req,$e->getMessage(),409);
             return response()->json(['message' => $e->getMessage(),"status" => 409], 409);

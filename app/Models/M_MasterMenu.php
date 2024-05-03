@@ -46,18 +46,17 @@ class M_MasterMenu extends Model
         });
     }
 
-    static public function getParentMenuName($parentId,$arr = true)
+    static public function getParentMenuName($parentId, $arr = true)
     {
         $parentMenu = self::find($parentId);
 
-        if($arr){
+        if ($arr) {
             return $parentMenu ? $parentMenu : null;
-        }else{
+        } else {
             return $parentMenu ? $parentMenu->menu_name : null;
         }
-      
     }
-    
+
 
     static function buildMenuArray($menuItems)
     {
@@ -69,7 +68,7 @@ class M_MasterMenu extends Model
                     'menuitem' => [
                         'labelmenu' => $menuItem['menu_name'],
                         'routename' => $menuItem['route'],
-                        'leading' => explode( ',',$menuItem['leading']),
+                        'leading' => explode(',', $menuItem['leading']),
                         'action' => $menuItem['action'],
                         'ability' => $menuItem['ability'],
                         'submenu' => []
@@ -100,12 +99,12 @@ class M_MasterMenu extends Model
                     'subid' => $menuItem['id'],
                     'sublabel' => $menuItem['menu_name'],
                     'subroute' => $menuItem['route'],
-                    'leading' => explode( ',',$menuItem['leading']),
+                    'leading' => explode(',', $menuItem['leading']),
                     'action' => $menuItem['action'],
                     'ability' => $menuItem['ability']
                 ];
             }
-        }   
+        }
 
         return array_values($menuArray);
     }
@@ -121,7 +120,7 @@ class M_MasterMenu extends Model
             'query' => [
                 'labelmenu' => $query->menu_name,
                 'routename' => $query->route,
-                'leading' => explode( ',',$query->leading),
+                'leading' => explode(',', $query->leading),
                 'action' => $query->action,
                 'ability' => $query->ability,
                 'submenu' => []
@@ -142,11 +141,11 @@ class M_MasterMenu extends Model
                 'subid' => $menuItem['id'],
                 'sublabel' => $menuItem['menu_name'],
                 'subroute' => $menuItem['route'],
-                'leading' => explode( ',',$menuItem['leading']),
+                'leading' => explode(',', $menuItem['leading']),
                 'action' => $menuItem['action'],
                 'ability' => $menuItem['ability']
             ];
-        }  
+        }
 
         return $menuItems;
     }

@@ -64,7 +64,7 @@ Route::get('approval/{id}', [SlikApprovalController::class, 'index']);
 
 Route::post('text_file', [TextFileReader::class, 'uploadText']);
 
-
+Route::get('test_show', [CrprospectController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
