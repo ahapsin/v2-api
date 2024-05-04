@@ -17,7 +17,8 @@ class M_TaskPusher extends Model
        'USER_ID',
        'CREATED',
        'LAST_UPDATE',
-       'STATUS'
+       'STATUS',
+       'TYPE'
     ];
     
     protected $guarded = [];

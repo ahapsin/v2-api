@@ -23,19 +23,17 @@ class CrprospectController extends Controller
 {
     public function index(Request $req){
         try {
-            // $ao_id = $req->user()->id;
-            // $data =  M_CrProspect::whereNull('deleted_at')->where('ao_id', $ao_id)->get();
-            $slik_approval = DB::table('slik_approval')->get();
+            $ao_id = $req->user()->id;
+            $data =  M_CrProspect::whereNull('deleted_at')->where('ao_id', $ao_id)->get();
+            $dto = R_CrProspect::collection($data);
 
-            // $dto = R_CrProspect::collection($data);
-
-            // ActivityLogger::logActivity($req,"Success",200);
-            return response()->json(['message' => 'OK',"status" => 200,'response' => $slik_approval], 200);
+            ActivityLogger::logActivity($req,"Success",200);
+            return response()->json(['message' => 'OK',"status" => 200,'response' => $dto], 200);
         } catch (QueryException $e) {
-            // ActivityLogger::logActivity($req,$e->getMessage(),409);
+            ActivityLogger::logActivity($req,$e->getMessage(),409);
             return response()->json(['message' => $e->getMessage(),"status" => 409], 409);
         } catch (\Exception $e) {
-            // ActivityLogger::logActivity($req,$e->getMessage(),500);
+            ActivityLogger::logActivity($req,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
     }
@@ -45,13 +43,13 @@ class CrprospectController extends Controller
         try {
             $check = M_CrProspect::where('id',$id)->whereNull('deleted_at')->firstOrFail();
 
-            // ActivityLogger::logActivity($req,"Success",200);
+            ActivityLogger::logActivity($req,"Success",200);
             return response()->json(['message' => 'OK',"status" => 200,'response' => self::resourceDetail($check)], 200);
         } catch (ModelNotFoundException $e) {
-            // ActivityLogger::logActivity($req,'Data Not Found',404);
+            ActivityLogger::logActivity($req,'Data Not Found',404);
             return response()->json(['message' => 'Data Not Found',"status" => 404], 404);
         } catch (\Exception $e) {
-            // ActivityLogger::logActivity($req,$e->getMessage(),500);
+            ActivityLogger::logActivity($req,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
     }
@@ -64,10 +62,10 @@ class CrprospectController extends Controller
 
             return response()->json(['message' => 'OK',"status" => 200,'response' => self::resourceData($check)], 200);
         } catch (ModelNotFoundException $e) {
-            // ActivityLogger::logActivity($req,'Data Not Found',404);
+            ActivityLogger::logActivity($req,'Data Not Found',404);
             return response()->json(['message' => 'Data Not Found',"status" => 404], 404);
         } catch (\Exception $e) {
-            // ActivityLogger::logActivity($req,$e->getMessage(),500);
+            ActivityLogger::logActivity($req,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
     }
@@ -295,15 +293,15 @@ class CrprospectController extends Controller
             }
     
             DB::commit();
-            // ActivityLogger::logActivity($request,"Success",200);
+            ActivityLogger::logActivity($request,"Success",200);
             return response()->json(['message' => 'Kunjungan created successfully',"status" => 200,'response' => $request->all()], 200);
         } catch (QueryException $e) {
             DB::rollback();
-            // ActivityLogger::logActivity($request,$e->getMessage(),409);
+            ActivityLogger::logActivity($request,$e->getMessage(),409);
             return response()->json(['message' => $e->getMessage(),"status" => 409], 409);
         } catch (\Exception $e) {
             DB::rollback();
-            // ActivityLogger::logActivity($request,$e->getMessage(),500);
+            ActivityLogger::logActivity($request,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
     }
@@ -386,15 +384,15 @@ class CrprospectController extends Controller
             $prospek->update($validator);
 
             DB::commit();
-            // ActivityLogger::logActivity($req,"Success",200);
+            ActivityLogger::logActivity($req,"Success",200);
             return response()->json(['message' => 'Kunjungan updated successfully', 'status' => 200, 'response' => $prospek], 200);
         } catch (QueryException $e) {
             DB::rollback();
-            // ActivityLogger::logActivity($req,$e->getMessage(),409);
+            ActivityLogger::logActivity($req,$e->getMessage(),409);
             return response()->json(['message' => $e->getMessage(), 'status' => 409], 409);
         } catch (\Exception $e) {
             DB::rollback();
-            // ActivityLogger::logActivity($req,$e->getMessage(),500);
+            ActivityLogger::logActivity($req,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(), 'status' => 500], 500);
         }
     }
@@ -417,11 +415,11 @@ class CrprospectController extends Controller
             return response()->json(['message' => 'Kunjungan deleted successfully',"status" => 200,'response' => $id], 200);
         } catch (QueryException $e) {
             DB::rollback();
-            // ActivityLogger::logActivity($req,$e->getMessage(),409);
+            ActivityLogger::logActivity($req,$e->getMessage(),409);
             return response()->json(['message' => $e->getMessage(),"status" => 409], 409);
         } catch (\Exception $e) {
             DB::rollback();
-            // ActivityLogger::logActivity($req,$e->getMessage(),500);
+            ActivityLogger::logActivity($req,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         } 
     }
@@ -455,15 +453,15 @@ class CrprospectController extends Controller
             M_CrProspectAttachment::create($data_array_attachment);
 
             DB::commit();
-            // ActivityLogger::logActivity($req,"Success",200);
+            ActivityLogger::logActivity($req,"Success",200);
             return response()->json(['message' => 'Image upload successfully',"status" => 200,'response' => URL::to('/').'/storage/'. $image_path], 200);
         } catch (QueryException $e) {
             DB::rollback();
-            // ActivityLogger::logActivity($req,$e->getMessage(),409);
+            ActivityLogger::logActivity($req,$e->getMessage(),409);
             return response()->json(['message' => $e->getMessage(),"status" => 409], 409);
         } catch (\Exception $e) {
             DB::rollback();
-            // ActivityLogger::logActivity($req,$e->getMessage(),500);
+            ActivityLogger::logActivity($req,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         } 
     }

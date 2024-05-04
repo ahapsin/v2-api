@@ -34,4 +34,14 @@ class M_Task extends Model
             }
         });
     }
+
+    public static function joinTaskPusher($userId){
+
+        $query = self::select('*')
+                            ->leftJoin('task_pusher', 'task_pusher.TASK_ID', '=', 'task.ID')
+                            ->where('task_pusher.USER_ID', $userId)
+                            ->get();
+
+        return $query;
+    }
 }

@@ -26,7 +26,7 @@ use App\Http\Controllers\Laporan\PaymentDumpController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+//ini dibuah dari luar
 //Login Authenticate
 Route::post('auth/login', [AuthController::class, 'login'])->name('login');
 Route::get('auth/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
@@ -51,8 +51,6 @@ Route::get('kunjungan/detailApproval/{id}', [CrprospectController::class, 'detai
     ->name('approve_slik')
     ->middleware('signed');
 
-Route::apiResource('cabang', BranchController::class);
-
 //! update approval by action user
 Route::put('approval', [SlikApprovalController::class, 'approveCustomer']);
 
@@ -63,8 +61,6 @@ Route::post('createUser', [UsersController::class, 'store']);
 Route::get('approval/{id}', [SlikApprovalController::class, 'index']);
 
 Route::post('text_file', [TextFileReader::class, 'uploadText']);
-
-Route::get('test_show', [CrprospectController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
@@ -78,7 +74,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('settings', SettingsController::class);
 
     //Route Group Master Branch
-   
+    Route::apiResource('cabang', BranchController::class);
 
     //Route Group Master Karyawan
     Route::apiResource('karyawan', HrEmployeeController::class);

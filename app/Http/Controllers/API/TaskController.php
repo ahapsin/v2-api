@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\R_Task;
 use App\Models\M_Task;
 use App\Models\M_TaskPusher;
 use Carbon\Carbon;
@@ -10,15 +11,15 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Ramsey\Uuid\Uuid;
 
 class TaskController extends Controller
 {
     public function index(Request $request)
     {
         try {
-            $data =  M_Task::all();
+            $data =  M_Task::joinTaskPusher($request->user()->id);
 
-            // ActivityLogger::logActivity($request,"Success",200);
             return response()->json(['message' => 'OK',"status" => 200,'response' => $data], 200);
         } catch (\Exception $e) {
             ActivityLogger::logActivity($request,$e->getMessage(),500);
@@ -26,36 +27,46 @@ class TaskController extends Controller
         }
     }
 
-    public function show(Request $req,$id)
-    {
-        try {
-            $check = M_Task::where('id',$id)->firstOrFail();
+    // public function show(Request $req,$id)
+    // {
+    //     try {
+    //         $check = M_Task::where('id',$id)->firstOrFail();
 
-            ActivityLogger::logActivity($req,"Success",200);
-            return response()->json(['message' => 'OK',"status" => 200,'response' => $check], 200);
-        } catch (ModelNotFoundException $e) {
-            ActivityLogger::logActivity($req,'Data Not Found',404);
-            return response()->json(['message' => 'Data Not Found',"status" => 404], 404);
-        } catch (\Exception $e) {
-            ActivityLogger::logActivity($req,$e->getMessage(),500);
-            return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
-        }
-    }
+    //         ActivityLogger::logActivity($req,"Success",200);
+    //         return response()->json(['message' => 'OK',"status" => 200,'response' => $check], 200);
+    //     } catch (ModelNotFoundException $e) {
+    //         ActivityLogger::logActivity($req,'Data Not Found',404);
+    //         return response()->json(['message' => 'Data Not Found',"status" => 404], 404);
+    //     } catch (\Exception $e) {
+    //         ActivityLogger::logActivity($req,$e->getMessage(),500);
+    //         return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
+    //     }
+    // }
 
     public function store(Request $request)
     {
         DB::beginTransaction();
         try {
 
-            $data = $request->all();
-            $data = array_change_key_case($data, CASE_UPPER);
-            $get_last_id= M_Task::create($data);
+            $uuid = Uuid::uuid4()->toString();
+
+            $task = [
+                'ID' => $uuid,
+                'NAME' => $request->name,
+                'FLAG' => $request->flag,
+                'ROUTE' => $request->route,
+                'PAR1' => $request->par1,
+                'STATUS' => $request->status
+            ];
+     
+            M_Task::create($task);
 
             $task_pusher = [
-                'TASK_ID' => $get_last_id->id,
+                'TASK_ID' => $uuid,
                 'USER_ID'  => $request->user()->id,
-                'CREATE_DATE'=> Carbon::now()->format('Y-m-d'),
-                'STATUS'  => 'active'
+                "CREATED"  => Carbon::now()->format('Y-m-d'),
+                'STATUS'  => 'active',
+                'TYPE'  => $request->type
             ];
 
             M_TaskPusher::create($task_pusher);
