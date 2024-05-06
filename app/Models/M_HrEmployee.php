@@ -84,6 +84,19 @@ class M_HrEmployee extends Model
         
     }
 
+    public static function getBranchCode($employeeID){
+
+        $code = self::select('branch.CODE as branch_code')
+                    ->leftJoin('hr_rolling', 'hr_rolling.NIK', '=', 'hr_employee.NIK')
+                    ->leftJoin('branch', 'branch.NAME', '=', 'hr_rolling.KANTOR')
+                    ->where('hr_employee.ID', $employeeID)
+                    ->where('hr_employee.STATUS_MST', 'Active')
+                    ->where('hr_rolling.USE_FLAG', 'Active')
+                    ->first(); 
+
+        return $code ? $code->branch_code : null;
+    }
+
     public static function getSpv($employeeID){
 
         $setSpv = DB::table('hr_employee as a')

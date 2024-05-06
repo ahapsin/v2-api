@@ -15,6 +15,7 @@ use App\Models\CrApplication\M_CrInfo;
 use App\Models\CrApplication\M_CrPersonal;
 use App\Models\CrApplication\M_CrReferral;
 use App\Models\CrApplication\M_CrSpouse;
+use App\Models\M_HrEmployee;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -55,100 +56,100 @@ class CrAppilcationController extends Controller
         DB::beginTransaction();
         try {
 
-            $request->validate([
-                'application.pengajuan' => 'required|string',
-                'application.jumlah_yang_diajukan' => 'required|numeric',
-                'application.jangka_waktu' => 'required|string',
-                'application.jenis_kredit' => 'required|string',
-                'application.tujuan_penggunaan' => 'required|string',
-                'application.cara_pembayaran' => 'required|string',
-                'application.jenis_angsuran' => 'required|string',
-                "personal.status_permohonan"=> 'required|string',
-                "personal.hubungan_dengan_bpr"=> 'required|string',
-                "personal.nama"=> 'required|string',
-                "personal.jenis_kelamin"=> 'required|string',
-                "personal.tempat_lahir"=>'required|string',
-                "personal.tanggal_lahir" => 'required|date',
-                "personal.pendidikan_terakhir"=> 'required|string',
-                "personal.noktp_sim"=> 'required|string',
-                "personal.tgl_terbit"=> 'required|date',
-                "personal.status_perkawinan"=> 'required|string',
-                "personal.jumlah_tanggungan"=> 'required|numeric',
-                "personal.agama"=> 'required|string',
-                "personal.alamat_tinggal"=> 'required|string',
-                "personal.kota"=> 'required|string',
-                "personal.kode_pos"=> 'required|string',
-                "personal.lama_tinggal"=> 'required|string',
-                "personal.telp_rumah"=> 'required_without:personal.hp',
-                "personal.hp"=> 'required_without:personal.telp_rumah',
-                "personal.status_tempat"=> 'required|string',
-                "personal.nama_gadis_ibu"=> 'required|string',
-                "personal.no_npwp"=> 'required_if:personal.npwp_flag,ada',
-                "business.pekerjaan" => 'required|string',
-                "business.nama_perusahan" => 'required|string',
-                "business.bidang_usaha" => 'required|string',
-                "business.jabatan" => 'required|string',
-                "business.alamat_perusahaan" => 'required|string',
-                "business.penghasilan_bersih_usaha" => 'required|numeric',
-                "business.usaha_sampingan" => 'required|string',
-                "business.lama_bekerja" => 'required|numeric',
-                "business.pengahailan_bersih_sampingan" => 'required|numeric',
-                'jaminan_kendaraan.*.nilai_jaminan' => 'numeric',
-                'jaminan_bangunan.*.luas_tanah' => 'numeric',
-                'jaminan_bangunan.*.luas_bangunan' => 'numeric',
-                'jaminan_bangunan.*.nilai_jaminan' => 'numeric',
-                'jaminan_bilyet.*.tanggal_valuta' => 'date',
-                'jaminan_bilyet.*.jangka_waktu' => 'numeric',
-                'jaminan_bilyet.*.nominal' => 'numeric',
-                'jaminan_emas.*.nominal' => 'numeric',
+            // $request->validate([
+            //     'application.pengajuan' => 'required|string',
+            //     'application.jumlah_yang_diajukan' => 'required|numeric',
+            //     'application.jangka_waktu' => 'required|string',
+            //     'application.jenis_kredit' => 'required|string',
+            //     'application.tujuan_penggunaan' => 'required|string',
+            //     'application.cara_pembayaran' => 'required|string',
+            //     'application.jenis_angsuran' => 'required|string',
+            //     "personal.status_permohonan"=> 'required|string',
+            //     "personal.hubungan_dengan_bpr"=> 'required|string',
+            //     "personal.nama"=> 'required|string',
+            //     "personal.jenis_kelamin"=> 'required|string',
+            //     "personal.tempat_lahir"=>'required|string',
+            //     "personal.tanggal_lahir" => 'required|date',
+            //     "personal.pendidikan_terakhir"=> 'required|string',
+            //     "personal.noktp_sim"=> 'required|string',
+            //     "personal.tgl_terbit"=> 'required|date',
+            //     "personal.status_perkawinan"=> 'required|string',
+            //     "personal.jumlah_tanggungan"=> 'required|numeric',
+            //     "personal.agama"=> 'required|string',
+            //     "personal.alamat_tinggal"=> 'required|string',
+            //     "personal.kota"=> 'required|string',
+            //     "personal.kode_pos"=> 'required|string',
+            //     "personal.lama_tinggal"=> 'required|string',
+            //     "personal.telp_rumah"=> 'required_without:personal.hp',
+            //     "personal.hp"=> 'required_without:personal.telp_rumah',
+            //     "personal.status_tempat"=> 'required|string',
+            //     "personal.nama_gadis_ibu"=> 'required|string',
+            //     "personal.no_npwp"=> 'required_if:personal.npwp_flag,ada',
+            //     "business.pekerjaan" => 'required|string',
+            //     "business.nama_perusahan" => 'required|string',
+            //     "business.bidang_usaha" => 'required|string',
+            //     "business.jabatan" => 'required|string',
+            //     "business.alamat_perusahaan" => 'required|string',
+            //     "business.penghasilan_bersih_usaha" => 'required|numeric',
+            //     "business.usaha_sampingan" => 'required|string',
+            //     "business.lama_bekerja" => 'required|numeric',
+            //     "business.pengahailan_bersih_sampingan" => 'required|numeric',
+            //     'jaminan_kendaraan.*.nilai_jaminan' => 'numeric',
+            //     'jaminan_bangunan.*.luas_tanah' => 'numeric',
+            //     'jaminan_bangunan.*.luas_bangunan' => 'numeric',
+            //     'jaminan_bangunan.*.nilai_jaminan' => 'numeric',
+            //     'jaminan_bilyet.*.tanggal_valuta' => 'date',
+            //     'jaminan_bilyet.*.jangka_waktu' => 'numeric',
+            //     'jaminan_bilyet.*.nominal' => 'numeric',
+            //     'jaminan_emas.*.nominal' => 'numeric',
 
-                // "spouse.nama" => "",
-                // "spouse.jenis_kelamin" => "",
-                // "spouse.tempat_lahir" => "Jonggol",
-                // "spouse.tanggal_lahir" => "1945-08-17",
-                // "spouse.pendidikan_terakhir" => "",
-                // "spouse.no_ktp_sim" => "",
-                // "spouse.tgl_terbit" => "",
-                // "spouse.berlaku" => "",
-                // "spouse.pekerjaan" => "",
-                // "spouse.nama_perusahaan" => "",
-                // "spouse.bidang_perusahaan" => "",
-                // "spouse.lama_perusahaan" => "",
-                // "spouse.jabatan" => "",
-                // "spouse.telp"=> 'required_without:spouse.hp',
-                // "spouse.hp"=> 'required_without:spouse.telp',
-                // "spouse.penghasilan_bersih_usaha" => ""
-            ]);
+            //     // "spouse.nama" => "",
+            //     // "spouse.jenis_kelamin" => "",
+            //     // "spouse.tempat_lahir" => "Jonggol",
+            //     // "spouse.tanggal_lahir" => "1945-08-17",
+            //     // "spouse.pendidikan_terakhir" => "",
+            //     // "spouse.no_ktp_sim" => "",
+            //     // "spouse.tgl_terbit" => "",
+            //     // "spouse.berlaku" => "",
+            //     // "spouse.pekerjaan" => "",
+            //     // "spouse.nama_perusahaan" => "",
+            //     // "spouse.bidang_perusahaan" => "",
+            //     // "spouse.lama_perusahaan" => "",
+            //     // "spouse.jabatan" => "",
+            //     // "spouse.telp"=> 'required_without:spouse.hp',
+            //     // "spouse.hp"=> 'required_without:spouse.telp',
+            //     // "spouse.penghasilan_bersih_usaha" => ""
+            // ]);
 
             $set_uuid = Uuid::uuid4()->toString();
 
-            self::insert_cr_application($request,$set_uuid);
-            self::insert_cr_personal($request,$set_uuid);
-            self::insert_cr_business($request,$set_uuid);
-            self::insert_cr_spouse($request,$set_uuid);
-            self::insert_cr_guarantor($request,$set_uuid);
-            self::insert_cr_info($request,$set_uuid);
-            self::insert_cr_referral($request,$set_uuid);
+            // self::insert_cr_application($request,$set_uuid);
+            // self::insert_cr_personal($request,$set_uuid);
+            // self::insert_cr_business($request,$set_uuid);
+            // self::insert_cr_spouse($request,$set_uuid);
+            // self::insert_cr_guarantor($request,$set_uuid);
+            // self::insert_cr_info($request,$set_uuid);
+            // self::insert_cr_referral($request,$set_uuid);
 
-            if (collect($request->jaminan_kendaraan)->isNotEmpty()) {
-                self::insert_cr_vehicle($request,$set_uuid);
-            }
+            // if (collect($request->jaminan_kendaraan)->isNotEmpty()) {
+            //     self::insert_cr_vehicle($request,$set_uuid);
+            // }
 
-            if (collect($request->jaminan_bangunan)->isNotEmpty()) {
-                self::insert_cr_property($request,$set_uuid);
-            }
+            // if (collect($request->jaminan_bangunan)->isNotEmpty()) {
+            //     self::insert_cr_property($request,$set_uuid);
+            // }
            
-            if (collect($request->jaminan_emas)->isNotEmpty()) {
-                self::insert_cr_gold($request,$set_uuid);
-            }
+            // if (collect($request->jaminan_emas)->isNotEmpty()) {
+            //     self::insert_cr_gold($request,$set_uuid);
+            // }
           
-            if (collect($request->jaminan_bilyet)->isNotEmpty()) {
-                self::insert_cr_securities($request,$set_uuid);
-            }
+            // if (collect($request->jaminan_bilyet)->isNotEmpty()) {
+            //     self::insert_cr_securities($request,$set_uuid);
+            // }
     
             DB::commit();
             // ActivityLogger::logActivity($request,"Success",200); 
-            return response()->json(['message' => 'Application created successfully',"status" => 200], 200);
+            return response()->json(['message' => 'Application created successfully',"status" => 200,'response'=> self::insert_cr_application($request,$set_uuid) ], 200);
         }catch (QueryException $e) {
             DB::rollback();
             ActivityLogger::logActivity($request,$e->getMessage(),409);
@@ -160,13 +161,25 @@ class CrAppilcationController extends Controller
         }
     }
 
+    private function fpk_counter($req){
+        $checkMax = M_CrApplication::max('APPLICATION_NUMBER');
+
+        $branch_code = M_HrEmployee::getBranchCode($req->user()->employee_id);
+
+        $lastSequence = (int) substr($checkMax, 6, 5);
+        
+        $generateCode = 'CF'. $branch_code . sprintf("%05s", $lastSequence++);
+        
+        return $generateCode;
+    }
+
     private function insert_cr_application($request,$set_uuid){
 
         $data_cr_application =[
             'ID' => $set_uuid,
             'CR_PROSPECT_ID' => "",
             'CLEAR_FLAG'  => "",
-            'APPLICATION_NUMBER'  => "",
+            'APPLICATION_NUMBER'  => self::fpk_counter($request),
             'CUST_CODE' => "",
             'ACCOUNT_NUMBER'  => "",
             'SUBMISSION_FLAG'  => $request->application['pengajuan'],
@@ -181,7 +194,9 @@ class CrAppilcationController extends Controller
             'CREATE_USER' => $request->user()->id,
         ];
 
-        M_CrApplication::create($data_cr_application);
+        return $data_cr_application;
+
+        // M_CrApplication::create($data_cr_application);
     }
 
     private function insert_cr_personal($request,$set_uuid){
