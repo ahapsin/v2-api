@@ -15,7 +15,7 @@ class M_CrBusiness extends Model
         'CR_APPLICATION_ID',
         'BUSINESS_STATUS',
         'COMPANY_NAME',
-        'COMPANY SECTION',
+        'COMPANY_SECTION',
         'BUSINESS_PERIOD',
         'POSITION',
         'ADDRESS',
