@@ -66,6 +66,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
     Route::apiResource('menu', MasterMenuController::class);
     Route::get('menu-sub-list', [MasterMenuController::class, 'menuSubList']);
+    Route::apiResource('role', MasterRoleController::class);
 
     //Route Group Master Users
     Route::apiResource('users', UsersController::class);

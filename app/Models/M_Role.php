@@ -16,6 +16,7 @@ class M_Role extends Model
         'role_name',
         'status',
         'created_by',
+        'created_at',
         'updated_by',
         'updated_at',
         'deleted_by',

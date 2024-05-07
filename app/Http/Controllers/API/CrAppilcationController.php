@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\R_CrApplication;
 use App\Models\CrApplication\M_CrApplication;
 use App\Models\CrApplication\M_CrBusiness;
 use App\Models\CrApplication\M_CrColGold;
@@ -37,18 +36,57 @@ class CrAppilcationController extends Controller
     }
 
     private function showData(){
-        $datas = [
-            'permohonan_pembiayaan' => "",
-            'data_pribadi_pemohon' => "",
-            'data_pekerjaan_usaha' => "",
-            'data_suami_istri' => "",
-            'data_penjaminan' => "",
-            'data_jaminan' => "",
-            'informasi' => "",
-            'data_referensi_keluarga' => ""
-        ];
+        $data_cr_application = M_CrApplication::get();
 
-        return $datas;
+        foreach ($data_cr_application as $result) {
+            $datas = [
+                "permohonan_pembiayaan" => [
+                    "id" =>  $result->ID,
+                    "cr_prospect_id" =>  $result->CR_PROSPECT_ID,
+                    "clear_flag" =>  $result->CLEAR_FLAG,
+                    "no_pengajuan" =>  $result->APPLICATION_NUMBER,
+                    "pengajuan" =>  $result->SUBMISSION_FLAG,
+                    "jumlah_yang_diajukan" =>  $result->SUBMISSION_VALUE,
+                    "jangka_waktu" =>  $result->PERIOD,
+                    "jenis_kredit" => $result->CREDIT_TYPE,
+                    "tujuan_penggunaan" =>  $result->INTENDED_FOR,
+                    "cara_pembayaran" =>  $result->TERM_OF_PAYMENT,
+                    "jenis_angsuran" =>  $result->INSTALLMENT_TYPE,
+                    'data_pribadi_pemohon' => [],
+                    'data_pekerjaan_usaha' => [],
+                    'data_suami_istri' => [],
+                    'data_penjaminan' => [],
+                    'data_jaminan' => [
+                        "jaminan_kendaraan" => [],
+                        "jaminan_bangunan" => [],
+                        "jaminan_bilyet" => [],
+                        "jaminan_emas" => []
+                    ],
+                    'informasi' =>  [],
+                    'data_referensi_keluarga' => []
+                ]
+            ];
+
+            $data_personal = M_CrPersonal::where('CR_APPLICATION_ID', $result->ID)->first();
+            array_push($datas['permohonan_pembiayaan']['data_pribadi_pemohon'], $data_personal);
+
+            $data_business = M_CrBusiness::where('CR_APPLICATION_ID', $result->ID)->first();
+            array_push($datas['permohonan_pembiayaan']['data_pekerjaan_usaha'], $data_business);
+
+            $data_spouse = M_CrSpouse::where('CR_APPLICATION_ID', $result->ID)->first();
+            array_push($datas['permohonan_pembiayaan']['data_suami_istri'], $data_spouse);
+
+            $data_guarantor = M_CrGuarantor::where('CR_APPLICATION_ID', $result->ID)->get();
+            array_push($datas['permohonan_pembiayaan']['data_penjaminan'], $data_guarantor);
+
+            $data_info = M_CrInfo::where('CR_APPLICATION_ID', $result->ID)->first();
+            array_push($datas['permohonan_pembiayaan']['informasi'], $data_info);
+
+            $data_refferal = M_CrBusiness::where('CR_APPLICATION_ID', $result->ID)->first();
+            array_push($datas['permohonan_pembiayaan']['data_referensi_keluarga'], $data_refferal);
+
+            return $datas;
+        }
     }
 
     public function store(Request $request)
@@ -56,100 +94,84 @@ class CrAppilcationController extends Controller
         DB::beginTransaction();
         try {
 
-            // $request->validate([
-            //     'application.pengajuan' => 'required|string',
-            //     'application.jumlah_yang_diajukan' => 'required|numeric',
-            //     'application.jangka_waktu' => 'required|string',
-            //     'application.jenis_kredit' => 'required|string',
-            //     'application.tujuan_penggunaan' => 'required|string',
-            //     'application.cara_pembayaran' => 'required|string',
-            //     'application.jenis_angsuran' => 'required|string',
-            //     "personal.status_permohonan"=> 'required|string',
-            //     "personal.hubungan_dengan_bpr"=> 'required|string',
-            //     "personal.nama"=> 'required|string',
-            //     "personal.jenis_kelamin"=> 'required|string',
-            //     "personal.tempat_lahir"=>'required|string',
-            //     "personal.tanggal_lahir" => 'required|date',
-            //     "personal.pendidikan_terakhir"=> 'required|string',
-            //     "personal.noktp_sim"=> 'required|string',
-            //     "personal.tgl_terbit"=> 'required|date',
-            //     "personal.status_perkawinan"=> 'required|string',
-            //     "personal.jumlah_tanggungan"=> 'required|numeric',
-            //     "personal.agama"=> 'required|string',
-            //     "personal.alamat_tinggal"=> 'required|string',
-            //     "personal.kota"=> 'required|string',
-            //     "personal.kode_pos"=> 'required|string',
-            //     "personal.lama_tinggal"=> 'required|string',
-            //     "personal.telp_rumah"=> 'required_without:personal.hp',
-            //     "personal.hp"=> 'required_without:personal.telp_rumah',
-            //     "personal.status_tempat"=> 'required|string',
-            //     "personal.nama_gadis_ibu"=> 'required|string',
-            //     "personal.no_npwp"=> 'required_if:personal.npwp_flag,ada',
-            //     "business.pekerjaan" => 'required|string',
-            //     "business.nama_perusahan" => 'required|string',
-            //     "business.bidang_usaha" => 'required|string',
-            //     "business.jabatan" => 'required|string',
-            //     "business.alamat_perusahaan" => 'required|string',
-            //     "business.penghasilan_bersih_usaha" => 'required|numeric',
-            //     "business.usaha_sampingan" => 'required|string',
-            //     "business.lama_bekerja" => 'required|numeric',
-            //     "business.pengahailan_bersih_sampingan" => 'required|numeric',
-            //     'jaminan_kendaraan.*.nilai_jaminan' => 'numeric',
-            //     'jaminan_bangunan.*.luas_tanah' => 'numeric',
-            //     'jaminan_bangunan.*.luas_bangunan' => 'numeric',
-            //     'jaminan_bangunan.*.nilai_jaminan' => 'numeric',
-            //     'jaminan_bilyet.*.tanggal_valuta' => 'date',
-            //     'jaminan_bilyet.*.jangka_waktu' => 'numeric',
-            //     'jaminan_bilyet.*.nominal' => 'numeric',
-            //     'jaminan_emas.*.nominal' => 'numeric',
-
-            //     // "spouse.nama" => "",
-            //     // "spouse.jenis_kelamin" => "",
-            //     // "spouse.tempat_lahir" => "Jonggol",
-            //     // "spouse.tanggal_lahir" => "1945-08-17",
-            //     // "spouse.pendidikan_terakhir" => "",
-            //     // "spouse.no_ktp_sim" => "",
-            //     // "spouse.tgl_terbit" => "",
-            //     // "spouse.berlaku" => "",
-            //     // "spouse.pekerjaan" => "",
-            //     // "spouse.nama_perusahaan" => "",
-            //     // "spouse.bidang_perusahaan" => "",
-            //     // "spouse.lama_perusahaan" => "",
-            //     // "spouse.jabatan" => "",
-            //     // "spouse.telp"=> 'required_without:spouse.hp',
-            //     // "spouse.hp"=> 'required_without:spouse.telp',
-            //     // "spouse.penghasilan_bersih_usaha" => ""
-            // ]);
+            $request->validate([
+                'application.pengajuan' => 'required|string',
+                'application.jumlah_yang_diajukan' => 'required|numeric',
+                'application.jangka_waktu' => 'required|string',
+                'application.jenis_kredit' => 'required|string',
+                'application.tujuan_penggunaan' => 'required|string',
+                'application.cara_pembayaran' => 'required|string',
+                'application.jenis_angsuran' => 'required|string',
+                "personal.status_permohonan"=> 'required|string',
+                "personal.hubungan_dengan_bpr"=> 'required|string',
+                "personal.nama"=> 'required|string',
+                "personal.jenis_kelamin"=> 'required|string',
+                "personal.tempat_lahir"=>'required|string',
+                "personal.tanggal_lahir" => 'required|date',
+                "personal.pendidikan_terakhir"=> 'required|string',
+                "personal.noktp_sim"=> 'required|string',
+                "personal.tgl_terbit"=> 'required|date',
+                "personal.status_perkawinan"=> 'required|string',
+                "personal.jumlah_tanggungan"=> 'required|numeric',
+                "personal.agama"=> 'required|string',
+                "personal.alamat_tinggal"=> 'required|string',
+                "personal.kab/kota"=> 'required|string',
+                "personal.kode_pos"=> 'required|string',
+                "personal.lama_tinggal"=> 'required|string',
+                "personal.telp_rumah"=> 'required_without:personal.hp',
+                "personal.hp"=> 'required_without:personal.telp_rumah',
+                "personal.status_tempat"=> 'required|string',
+                "personal.nama_gadis_ibu"=> 'required|string',
+                "personal.no_npwp"=> 'required_if:personal.npwp_flag,ada',
+                "business.pekerjaan" => 'required|string',
+                "business.nama_perusahan" => 'required|string',
+                "business.bidang_usaha" => 'required|string',
+                "business.jabatan" => 'required|string',
+                "business.alamat_perusahaan" => 'required|string',
+                "business.penghasilan_bersih_usaha" => 'required|numeric',
+                "business.usaha_sampingan" => 'required|string',
+                "business.lama_bekerja" => 'required|numeric',
+                "business.pengahailan_bersih_sampingan" => 'required|numeric',
+                'jaminan_kendaraan.*.nilai_jaminan' => 'numeric',
+                'jaminan_bangunan.*.luas_tanah' => 'numeric',
+                'jaminan_bangunan.*.luas_bangunan' => 'numeric',
+                'jaminan_bangunan.*.nilai_jaminan' => 'numeric',
+                'jaminan_bilyet.*.tanggal_valuta' => 'date',
+                'jaminan_bilyet.*.jangka_waktu' => 'numeric',
+                'jaminan_bilyet.*.nominal' => 'numeric',
+                'jaminan_emas.*.nominal' => 'numeric',
+                'jaminan_emas.*.nomor_code_emas' => 'unique:cr_col_gold,GOLD_CODE'
+            ]);
 
             $set_uuid = Uuid::uuid4()->toString();
 
-            // self::insert_cr_application($request,$set_uuid);
-            // self::insert_cr_personal($request,$set_uuid);
-            // self::insert_cr_business($request,$set_uuid);
-            // self::insert_cr_spouse($request,$set_uuid);
-            // self::insert_cr_guarantor($request,$set_uuid);
-            // self::insert_cr_info($request,$set_uuid);
-            // self::insert_cr_referral($request,$set_uuid);
+            self::insert_cr_application($request,$set_uuid);
+            self::insert_cr_personal($request,$set_uuid);
+            self::insert_cr_business($request,$set_uuid);
+            self::insert_cr_spouse($request,$set_uuid);
+            self::insert_cr_guarantor($request,$set_uuid);
+            self::insert_cr_info($request,$set_uuid);
+            self::insert_cr_referral($request,$set_uuid);
 
-            // if (collect($request->jaminan_kendaraan)->isNotEmpty()) {
-            //     self::insert_cr_vehicle($request,$set_uuid);
-            // }
+            if (collect($request->jaminan_kendaraan)->isNotEmpty()) {
+                self::insert_cr_vehicle($request,$set_uuid);
+            }
 
-            // if (collect($request->jaminan_bangunan)->isNotEmpty()) {
-            //     self::insert_cr_property($request,$set_uuid);
-            // }
+            if (collect($request->jaminan_bangunan)->isNotEmpty()) {
+                self::insert_cr_property($request,$set_uuid);
+            }
            
-            // if (collect($request->jaminan_emas)->isNotEmpty()) {
-            //     self::insert_cr_gold($request,$set_uuid);
-            // }
+            if (collect($request->jaminan_emas)->isNotEmpty()) {
+                self::insert_cr_gold($request,$set_uuid);
+            }
           
-            // if (collect($request->jaminan_bilyet)->isNotEmpty()) {
-            //     self::insert_cr_securities($request,$set_uuid);
-            // }
+            if (collect($request->jaminan_bilyet)->isNotEmpty()) {
+                self::insert_cr_securities($request,$set_uuid);
+            }
     
             DB::commit();
-            // ActivityLogger::logActivity($request,"Success",200); 
-            return response()->json(['message' => 'Application created successfully',"status" => 200,'response'=> self::insert_cr_application($request,$set_uuid) ], 200);
+            ActivityLogger::logActivity($request,"Success",200); 
+            return response()->json(['message' => 'Application created successfully',"status" => 200], 200);
         }catch (QueryException $e) {
             DB::rollback();
             ActivityLogger::logActivity($request,$e->getMessage(),409);
@@ -163,12 +185,12 @@ class CrAppilcationController extends Controller
 
     private function fpk_counter($req){
         $checkMax = M_CrApplication::max('APPLICATION_NUMBER');
-
         $branch_code = M_HrEmployee::getBranchCode($req->user()->employee_id);
 
         $lastSequence = (int) substr($checkMax, 6, 5);
+        $lastSequence++;
         
-        $generateCode = 'CF'. $branch_code . sprintf("%05s", $lastSequence++);
+        $generateCode = 'CF'. $branch_code . sprintf("%05s", $lastSequence);
         
         return $generateCode;
     }
@@ -178,7 +200,7 @@ class CrAppilcationController extends Controller
         $data_cr_application =[
             'ID' => $set_uuid,
             'CR_PROSPECT_ID' => "",
-            'CLEAR_FLAG'  => "",
+            'CLEAR_FLAG'  => $request->application['clear_flag'],
             'APPLICATION_NUMBER'  => self::fpk_counter($request),
             'CUST_CODE' => "",
             'ACCOUNT_NUMBER'  => "",
@@ -194,9 +216,7 @@ class CrAppilcationController extends Controller
             'CREATE_USER' => $request->user()->id,
         ];
 
-        return $data_cr_application;
-
-        // M_CrApplication::create($data_cr_application);
+        M_CrApplication::create($data_cr_application);
     }
 
     private function insert_cr_personal($request,$set_uuid){
@@ -218,7 +238,10 @@ class CrAppilcationController extends Controller
             'AMENABILITY' => $request->personal['jumlah_tanggungan'],
             'RELIGION' => $request->personal['agama'],
             'ADDRESS' => $request->personal['alamat_tinggal'],
-            'CITY' => $request->personal['kota'],
+            'PROVINCE' => $request->personal['provinsi'],
+            'CITY' => $request->personal['kab/kota'],
+            'SUBDISTRICT' => $request->personal['kecamatan'],
+            'VILLAGE' => $request->personal['kel_desa'],
             'POSTAL_CODE' => $request->personal['kode_pos'],
             'STAY_PERIOD' => $request->personal['lama_tinggal'],
             'PHONE' => $request->personal['telp_rumah'],
@@ -288,30 +311,31 @@ class CrAppilcationController extends Controller
     }
 
     private function insert_cr_guarantor($request,$set_uuid){
+        foreach ($request->guarantor as $result) {
+            $data_cr_guarantor =[
+                'ID' => Uuid::uuid4()->toString(),
+                'CR_APPLICATION_ID' => $set_uuid,
+                'HEADER_ID' => "",
+                'NAME' => $result['nama'],
+                'BIRTHPLACE' => $result['tempat_lahir'],
+                'BIRTHDATE' => $result['tanggal_lahir'],
+                'ID_NUMBER' => $result['no_ktp_sim'],
+                'ADDRESS' => $result['alamat_tinggal'],
+                'CITY' => $result['kota'],
+                'POSTAL_CODE' => $result['kode_pos'],
+                'STAY_PERIOD' => $result['lama_tinggal'],
+                'PHONE' => $result['telp_rumah'],
+                'PERSONAL_NUMBER' => $result['hp'],
+                'RELATION' => $result['hubungan_debitur'],
+                'OCCUPATION' => $result['pekerjaan_usah'],
+                'MONTHLY_NET_INCOME' => $result['penghasilan_bulan'],
+                'VERSION' => 1,
+                'CREATE_DATE' => Carbon::now()->format('Y-m-d'),
+                'CREATE_USER' => $request->user()->id,
+            ];
 
-        $data_cr_guarantor =[
-            'ID' => Uuid::uuid4()->toString(),
-            'CR_APPLICATION_ID' => $set_uuid,
-            'HEADER_ID' => "",
-            'NAME' => $request->guarantor['nama'],
-            'BIRTHPLACE' => $request->guarantor['tempat_lahir'],
-            'BIRTHDATE' => $request->guarantor['tanggal_lahir'],
-            'ID_NUMBER' => $request->guarantor['no_ktp_sim'],
-            'ADDRESS' => $request->guarantor['alamat_tinggal'],
-            'CITY' => $request->guarantor['kota'],
-            'POSTAL_CODE' => $request->guarantor['kode_pos'],
-            'STAY_PERIOD' => $request->guarantor['lama_tinggal'],
-            'PHONE' => $request->guarantor['telp_rumah'],
-            'PERSONAL_NUMBER' => $request->guarantor['hp'],
-            'RELATION' => $request->guarantor['hubungan_debitur'],
-            'OCCUPATION' => $request->guarantor['pekerjaan_usah'],
-            'MONTHLY_NET_INCOME' => $request->guarantor['penghasilan_bulan'],
-            'VERSION' => 1,
-            'CREATE_DATE' => Carbon::now()->format('Y-m-d'),
-            'CREATE_USER' => $request->user()->id,
-        ];
-
-        M_CrGuarantor::create($data_cr_guarantor);
+            M_CrGuarantor::create($data_cr_guarantor);
+        }
     }
 
     private function insert_cr_info($request,$set_uuid){
