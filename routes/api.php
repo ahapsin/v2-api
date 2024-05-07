@@ -16,13 +16,18 @@ use App\Http\Controllers\API\{
     SlikApprovalController,
     SubordinateListController,
     TaskController,
+    TestController,
     TextFileReader,
     UsersController
 };
 use App\Http\Controllers\API\Menu\MasterMenuController;
 use App\Http\Controllers\API\Menu\MasterRoleController;
+use App\Http\Controllers\API\Menu\RoleAccessMenuController;
+use App\Http\Controllers\API\Menu\UserAccessMenuController;
+use App\Http\Controllers\API\Menu\UserAccessRoleController;
 use App\Http\Controllers\Laporan\HistoryAccController;
 use App\Http\Controllers\Laporan\PaymentDumpController;
+use App\Models\M_MasterUserAccessRole;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -67,6 +72,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('menu', MasterMenuController::class);
     Route::get('menu-sub-list', [MasterMenuController::class, 'menuSubList']);
     Route::apiResource('role', MasterRoleController::class);
+    Route::apiResource('role_access_menu', RoleAccessMenuController::class);
+    Route::apiResource('user_access_role', UserAccessRoleController::class);
+    Route::apiResource('user_access_menu', UserAccessMenuController::class);
 
     //Route Group Master Users
     Route::apiResource('users', UsersController::class);

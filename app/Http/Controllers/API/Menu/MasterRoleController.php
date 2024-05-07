@@ -18,7 +18,7 @@ class MasterRoleController extends Controller
         try {
             $data = M_Role::all();
         
-            // $test = ActivityLogger::logActivity($req,"Success",200);
+            ActivityLogger::logActivity($request,"Success",200);
             return response()->json(['message' => 'OK', "status" => 200, 'response' => $data], 200);
         } catch (\Exception $e) {
             ActivityLogger::logActivity($request,$e->getMessage(),500);
@@ -52,10 +52,15 @@ class MasterRoleController extends Controller
                 'status' => 'required|string'
             ]);
 
-            $validator['created_at'] = Carbon::now()->format('Y-m-d');
-            $validator['created_by'] = $request->user()->id;
-
+            $validator = [
+                'role_name' =>$request->role_name,
+                'status' =>$request->status,
+                'created_at' =>Carbon::now()->format('Y-m-d'),
+                'created_by' =>$request->user()->id
+            ];
+            
             M_Role::create($validator);
+
             DB::commit();
             return response()->json(['message' => 'Master Role created successfully', "status" => 200], 200);
         } catch (QueryException $e) {
@@ -65,6 +70,67 @@ class MasterRoleController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             ActivityLogger::logActivity($request,$e->getMessage(),500);
+            return response()->json(['message' => $e->getMessage(), "status" => 500], 500);
+        }
+    }
+
+    public function update(Request $request,$id)
+    {
+        DB::beginTransaction();
+        try {
+            $request->validate([
+                'role_name' => 'unique:master_role,role_name,'.$id,
+            ]);
+
+            $role = M_Role::findOrFail($id);
+
+            $validator = [
+                'role_name' => $request->input('role_name'),
+                'status' => $request->input('status'),
+                'updated_at' =>Carbon::now()->format('Y-m-d'),
+                'updated_by' =>$request->user()->id
+            ];
+
+            $role->update($validator);
+
+            DB::commit();
+            ActivityLogger::logActivity($request,"Success",200);
+            return response()->json(['message' => 'Master Role updated successfully', "status" => 200], 200);
+        } catch (ModelNotFoundException $e) {
+            DB::rollback();
+            ActivityLogger::logActivity($request,'Data Not Found',404);
+            return response()->json(['message' => 'Data Not Found', "status" => 404], 404);
+        } catch (\Exception $e) {
+            DB::rollback();
+            ActivityLogger::logActivity($request,$e->getMessage(),500);
+            return response()->json(['message' => $e->getMessage(), "status" => 500], 500);
+        }
+    }
+
+    public function destroy(Request $req,$id)
+    { 
+        DB::beginTransaction();
+        try {
+            
+            $role = M_Role::findOrFail($id);
+
+            $update = [
+                'deleted_by' => $req->user()->id,
+                'deleted_at' => Carbon::now()->format('Y-m-d H:i:s')
+            ];
+
+            $role->update($update);
+
+            DB::commit();
+            ActivityLogger::logActivity($req,"Success",200);
+            return response()->json(['message' => 'Master Role deleted successfully', "status" => 200], 200);
+        } catch (ModelNotFoundException $e) {
+            DB::rollback();
+            ActivityLogger::logActivity($req,'Data Not Found',404);
+            return response()->json(['message' => 'Data Not Found', "status" => 404], 404);
+        } catch (\Exception $e) {
+            DB::rollback();
+            ActivityLogger::logActivity($req,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(), "status" => 500], 500);
         }
     }

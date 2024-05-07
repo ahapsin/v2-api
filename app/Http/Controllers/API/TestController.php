@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\M_HrEmployee;
+use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -11,10 +12,10 @@ class TestController extends Controller
 {
     public function index (){
 
-        $userId =Auth::user()->employee_id;
-        $test = self::subOrdinateList($userId);
-        
-        return response()->json(['message' => 'Ok', "status" => 200, 'response' =>  $test], 200);
+        // $userId =Auth::user()->employee_id;
+        // $test = self::subOrdinateList($userId);
+                
+        return response()->json(['message' => 'Ok', "status" => 200, 'response' =>  'Cie buka-buka'], 200);
 
     }
 
