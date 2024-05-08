@@ -4,11 +4,20 @@ namespace App\Http\Controllers\API\Menu;
 
 use App\Http\Controllers\API\ActivityLogger;
 use App\Http\Controllers\Controller;
+use App\Models\M_MasterMenu;
 use App\Models\M_MasterRoleAccessMenu;
+use App\Models\M_Role;
+use App\Rules\NumericZeroOne;
 use Carbon\Carbon;
+use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
+use Illuminate\Database\RecordsNotFoundException;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class RoleAccessMenuController extends Controller
 {
@@ -41,33 +50,78 @@ class RoleAccessMenuController extends Controller
     //     }
     // }
 
+    private function validateNumericZeroOne($attribute, $value, $fail)
+    {
+        if (!is_numeric($value) || ($value != 0 && $value != 1)) {
+            $fail('The '.$attribute.' must be numeric and either 0 or 1.');
+        }
+    }
+
+    private function __validator($request){
+        $validator = Validator::make($request->all(), [
+            'master_menu_id' => 'required|string',
+            'master_role_id' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) use ($request) {
+                    $exists = DB::table('master_role_access_menu')
+                        ->where('master_role_id', $value)
+                        ->where('master_menu_id', $request->master_menu_id)
+                        ->exists();
+                        
+                    if ($exists) {
+                        $fail("The combination of $attribute and master_menu_id already exists.");
+                    }
+                },
+            ],
+            "view" => function ($attribute, $value, $fail) {
+               self:: validateNumericZeroOne($attribute, $value, $fail);
+            },
+            "create" => function ($attribute, $value, $fail) {
+                self:: validateNumericZeroOne($attribute, $value, $fail);
+             },
+            "update" => function ($attribute, $value, $fail) {
+                self:: validateNumericZeroOne($attribute, $value, $fail);
+             },
+            "delete" => function ($attribute, $value, $fail) {
+                self:: validateNumericZeroOne($attribute, $value, $fail);
+             },
+        ]);
+
+        return $validator;
+    }
+
     public function store(Request $request)
     {
         DB::beginTransaction();
         try {
-        
-            $request->validate([
-                'master_menu_id' => 'required|string',
-                'master_role_id' => [
-                    'required',
-                    'string',
-                    function ($attribute, $value, $fail) use ($request) {
-                        $exists = DB::table('master_role_access_menu')
-                            ->where('master_role_id', $value)
-                            ->where('master_menu_id', $request->master_menu_id)
-                            ->exists();
-                            
-                        if ($exists) {
-                            $fail("The combination of $attribute and master_menu_id already exists.");
-                        }
-                    },
-                ],
-            ]);
-            
+
+            $validator = self::__validator($request);
+
+            if ($validator->fails()) {
+                $errorMessage = implode(', ', $validator->errors()->all());
+                throw new Exception($errorMessage,500);
+            }
+
+            $masterMenu = M_MasterMenu::where('id',$request->master_menu_id)->first();
+
+            if(empty($masterMenu)){   
+                throw new Exception("Data Master Menu Not Found", 404);
+            }
+
+            $role = M_Role::where('id',$request->master_role_id)->first();
+
+            if(empty($role)){   
+                throw new Exception("Data Role Not Found", 404);
+            }
 
             $validator = [
-                'master_menu_id' =>$request->master_menu_id,
-                'master_role_id' =>$request->master_role_id,
+                'master_menu_id' => $request->master_menu_id,
+                'master_role_id' => $request->master_role_id,
+                "view" => $request->view,
+                "insert" => $request->insert,
+                "update" => $request->update,
+                "delete" => $request->delete,
                 'created_at' =>Carbon::now()->format('Y-m-d'),
                 'created_by' =>$request->user()->id
             ];
@@ -76,14 +130,10 @@ class RoleAccessMenuController extends Controller
 
             DB::commit();
             return response()->json(['message' => 'Role Access Menu created successfully', "status" => 200], 200);
-        } catch (QueryException $e) {
-            DB::rollback();
-            ActivityLogger::logActivity($request,$e->getMessage(),409);
-            return response()->json(['message' => $e->getMessage(), "status" => 409], 409);
         } catch (\Exception $e) {
             DB::rollback();
-            ActivityLogger::logActivity($request,$e->getMessage(),500);
-            return response()->json(['message' => $e->getMessage(), "status" => 500], 500);
+            ActivityLogger::logActivity($request,$e->getMessage(),$e->getCode());
+            return response()->json(['message' => $e->getMessage(), "status" => $e->getCode()], $e->getCode());
         }
     }
 
