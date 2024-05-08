@@ -73,19 +73,7 @@ class RoleAccessMenuController extends Controller
                         $fail("The combination of $attribute and master_menu_id already exists.");
                     }
                 },
-            ],
-            "view" => function ($attribute, $value, $fail) {
-               self:: validateNumericZeroOne($attribute, $value, $fail);
-            },
-            "create" => function ($attribute, $value, $fail) {
-                self:: validateNumericZeroOne($attribute, $value, $fail);
-             },
-            "update" => function ($attribute, $value, $fail) {
-                self:: validateNumericZeroOne($attribute, $value, $fail);
-             },
-            "delete" => function ($attribute, $value, $fail) {
-                self:: validateNumericZeroOne($attribute, $value, $fail);
-             },
+            ]
         ]);
 
         return $validator;

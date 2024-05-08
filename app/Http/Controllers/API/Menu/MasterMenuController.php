@@ -26,10 +26,10 @@ class MasterMenuController extends Controller
 
             $dto = R_MasterMenu::collection($data);
 
-            // $test = ActivityLogger::logActivity($req,"Success",200);
+            ActivityLogger::logActivity($req,"Success",200);
             return response()->json(['message' => 'OK', "status" => 200, 'response' => $dto], 200);
         } catch (\Exception $e) {
-            // ActivityLogger::logActivity($req,$e->getMessage(),500);
+            ActivityLogger::logActivity($req,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
     }
