@@ -5,7 +5,8 @@ namespace App\Http\Controllers\API\Menu;
 use App\Http\Controllers\API\ActivityLogger;
 use App\Http\Controllers\Controller;
 use App\Models\M_Group;
-use App\Models\M_Role;
+use App\Models\M_MasterGroupAccessMenu;
+use App\Models\M_MasterMenu;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -49,22 +50,43 @@ class MasterGroupController extends Controller
         try {
           
             $request->validate([
-                'group_name' => 'required|string|unique:master_role',
-                'status' => 'required|string'
+                'group_name' => 'required|string|unique:master_group',
             ]);
 
             $validator = [
-                'group_name' => $request->role_name,
-                'status' => $request->status,
+                'group_name' => $request->group_name,
+                'status' => 'active',
                 'created_at' => Carbon::now()->format('Y-m-d'),
                 'created_by' => $request->user()->id
             ];
             
-            M_Group::create($validator);
+            $last_id_group = M_Group::create($validator);
+
+            if ($request->has('list_menu_id') && is_array($request->list_menu_id)) {
+                foreach ($request->list_menu_id as $value) {
+
+                $menuId= $value['menu_id'];
+
+                M_MasterMenu::findOrFail($menuId);
+
+                $data_id_menu = [
+                    'master_menu_id' => $menuId,
+                    'master_group_id' => $last_id_group->id,
+                    'created_at' => Carbon::now()->format('Y-m-d'),
+                    'created_by' => $request->user()->id
+                    ];
+                
+                    M_MasterGroupAccessMenu::create($data_id_menu);
+                }
+            }
 
             DB::commit();
             return response()->json(['message' => 'Master Group created successfully', "status" => 200], 200);
-        } catch (QueryException $e) {
+        } catch (ModelNotFoundException $e) {
+            DB::rollback();
+            ActivityLogger::logActivity($request,'Menu Id Not Found',404);
+            return response()->json(['message' => 'Menu Id Not Found', "status" => 404], 404);
+        }catch (QueryException $e) {
             DB::rollback();
             ActivityLogger::logActivity($request,$e->getMessage(),409);
             return response()->json(['message' => $e->getMessage(), "status" => 409], 409);

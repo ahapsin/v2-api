@@ -10,6 +10,7 @@ use App\Http\Controllers\API\{
     CustomerAccountController,
     DetailProfileController,
     HrEmployeeController,
+    HrPosition,
     LogSendOutController,
     LogTemporaryLinkController,
     SettingsController,
@@ -98,6 +99,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('getSpv', [SubordinateListController::class, 'spvSearch']);
     Route::post('getHierarchy', [SubordinateListController::class, 'getHierarchy']);
+
+    Route::apiResource('position', HrPosition::class);
 
     Route::put('slikSpv', [SlikApprovalController::class, 'approveSpv']);
 });
