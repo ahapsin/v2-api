@@ -38,13 +38,13 @@ class CrprospectController extends Controller
         }
     }
 
-    public function detail(Request $req,$id)
+    public function show(Request $req,$id)
     {
         try {
             $check = M_CrProspect::where('id',$id)->whereNull('deleted_at')->firstOrFail();
 
             ActivityLogger::logActivity($req,"Success",200);
-            return response()->json(['message' => 'OK',"status" => 200,'response' => self::resourceDetail($check)], 200);
+            return response()->json(['message' => 'OK',"status" => 200,'response' => self::resourceDetail($req,$check)], 200);
         } catch (ModelNotFoundException $e) {
             ActivityLogger::logActivity($req,'Data Not Found',404);
             return response()->json(['message' => 'Data Not Found',"status" => 404], 404);
@@ -134,10 +134,8 @@ class CrprospectController extends Controller
         return $arrayList;
     }
 
-    private function resourceDetail($data)
+    private function resourceDetail($request,$data)
     {
-        $getEmployeID =User::where('id',$data->ao_id)->first();
-        $ao = M_HrEmployee::where('ID', $getEmployeID->employee_id)->first();
         $slik_approval = M_SlikApproval::where('CR_PROSPECT_ID',$data->id)->get();
         $colData = DB::table('cr_prospect_col')->where('cr_prospect_id',$data->id )->get();
         $personData = DB::table('cr_prospect_person')->where('cr_prospect_id',$data->id )->get();
@@ -149,8 +147,8 @@ class CrprospectController extends Controller
             'ao_id' => $data->ao_id,
             'data_ao' =>  [
                 [
-                    'id_ao' => $ao->ID,
-                    'nama_ao' => $ao->NAMA,
+                    'id_ao' => $request->user()->id,
+                    'nama_ao' => $request->user()->username,
                 ]
             ],
             'visit_date' => date('d-m-Y',strtotime($data->visit_date)),
@@ -352,7 +350,6 @@ class CrprospectController extends Controller
     private function createCrProspekPerson(Request $request, $crProspek)
     {
         foreach ($request->penjamin as $result) {
-
             $data_array_person = [
                 'id' => Uuid::uuid4()->toString(),
                 'cr_prospect_id' => $crProspek->id,
@@ -372,20 +369,21 @@ class CrprospectController extends Controller
     {
         try {
             DB::beginTransaction();
-            $validator = $this->_validate($req);
 
-            $prospek = M_CrProspect::find($id);
+            $prospek = M_CrProspect::findOrFail($id);
 
-            if (!$prospek) {
-                return response()->json(['message' => 'Record not found', 'status' => 404], 404);
-            }
-            
+            $req['updated_by'] = $req->user()->id;
+            $req['updated_at'] = now();
 
-            $prospek->update($validator);
+            $prospek->update($req->all());
 
             DB::commit();
             ActivityLogger::logActivity($req,"Success",200);
             return response()->json(['message' => 'Kunjungan updated successfully', 'status' => 200, 'response' => $prospek], 200);
+        } catch (ModelNotFoundException $e) {
+            DB::rollback();
+            ActivityLogger::logActivity($req, 'Cr Prospect Id Not Found', 404);
+            return response()->json(['message' => 'Cr Prospect Id Not Found', "status" => 404], 404);
         } catch (QueryException $e) {
             DB::rollback();
             ActivityLogger::logActivity($req,$e->getMessage(),409);
@@ -402,17 +400,22 @@ class CrprospectController extends Controller
         try {
             DB::beginTransaction();
 
-            $check = M_CrProspect::where('id',$id)->first();
+            $check = M_CrProspect::findOrFail($id);
 
-            if (!$check) {
-                return response()->json(['message' => 'Kunjungan not found',"status" => 404], 404);
-            }
+            $data = [
+                'deleted_by' => $req->user()->id,
+                'deleted_at' => now()
+            ];
             
-            $check->update(['deleted_at' => now()]);
+            $check->update($data);
 
             DB::commit();
             ActivityLogger::logActivity($req,"Success",200);
             return response()->json(['message' => 'Kunjungan deleted successfully',"status" => 200,'response' => $id], 200);
+        } catch (ModelNotFoundException $e) {
+            DB::rollback();
+            ActivityLogger::logActivity($req, 'Cr Prospect Id Not Found', 404);
+            return response()->json(['message' => 'Cr Prospect Id Not Found', "status" => 404], 404);
         } catch (QueryException $e) {
             DB::rollback();
             ActivityLogger::logActivity($req,$e->getMessage(),409);
@@ -435,13 +438,11 @@ class CrprospectController extends Controller
                 'cr_prospect_id' =>'required|string'
             ]);
 
-            // $check = M_CrProspect::where('id',$req->cr_prospect_id)->first();
-            
-            // if (empty($check)) {
-            //     return response()->json(['message' => 'Cr Prospect Id Not Found',"status" => 404,'response' =>''], 404);
-            // }
+            M_CrProspect::findOrFail($req->cr_prospect_id);
 
             $image_path = $req->file('image')->store('Cr_Prospect');
+
+            $url= URL::to('/') . '/storage/' . $image_path;
 
             $data_array_attachment = [
                 'id' => Uuid::uuid4()->toString(),
@@ -454,47 +455,11 @@ class CrprospectController extends Controller
 
             DB::commit();
             ActivityLogger::logActivity($req,"Success",200);
-            return response()->json(['message' => 'Image upload successfully',"status" => 200,'response' => URL::to('/').'/storage/'. $image_path], 200);
-        } catch (QueryException $e) {
+            return response()->json(['message' => 'Image upload successfully',"status" => 200,'response' => $url], 200);
+        } catch (ModelNotFoundException $e) {
             DB::rollback();
-            ActivityLogger::logActivity($req,$e->getMessage(),409);
-            return response()->json(['message' => $e->getMessage(),"status" => 409], 409);
-        } catch (\Exception $e) {
-            DB::rollback();
-            ActivityLogger::logActivity($req,$e->getMessage(),500);
-            return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
-        } 
-    }
-
-    public function multiImage(Request $req)
-    {
-        try {
-            DB::beginTransaction();
-
-            $this->validate($req, [
-                // 'images[]' => 'required|image|mimes:jpg,png,jpeg,gif,svg',
-                'type' => 'required|string',
-                'cr_prospect_id' =>'required|string'
-            ]);
-
-            $get_request = $req->file('images');
-
-            foreach ($get_request as $list) {
-                $image_path = $list->store('Cr_Prospect');
-
-                $data_array_attachment = [
-                    'id' => Uuid::uuid4()->toString(),
-                    'cr_prospect_id' => $req->cr_prospect_id,
-                    'type' => $req->type,
-                    'attachment_path' => $image_path ?? ''
-                ];
-    
-                M_CrProspectAttachment::create($data_array_attachment);      
-            }
-
-            DB::commit();
-            ActivityLogger::logActivity($req,"Success",200);
-            return response()->json(['message' => 'Image upload successfully',"status" => 200,'response' =>'http://192.168.1.9:9000/storage/'. $image_path], 200);
+            ActivityLogger::logActivity($req, 'Cr Prospect Id Not Found', 404);
+            return response()->json(['message' => 'Cr Prospect Id Not Found', "status" => 404], 404);
         } catch (QueryException $e) {
             DB::rollback();
             ActivityLogger::logActivity($req,$e->getMessage(),409);

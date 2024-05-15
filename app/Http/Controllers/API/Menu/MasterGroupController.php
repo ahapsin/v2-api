@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\Menu;
 
 use App\Http\Controllers\API\ActivityLogger;
 use App\Http\Controllers\Controller;
+use App\Models\M_Group;
 use App\Models\M_Role;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -11,12 +12,12 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-class MasterRoleController extends Controller
+class MasterGroupController extends Controller
 {
     public function index(Request $request)
     {
         try {
-            $data = M_Role::all();
+            $data = M_Group::all();
         
             ActivityLogger::logActivity($request,"Success",200);
             return response()->json(['message' => 'OK', "status" => 200, 'response' => $data], 200);
@@ -29,7 +30,7 @@ class MasterRoleController extends Controller
     public function show(Request $req,$id)
     {
         try {
-            $check = M_Role::where('id',$id)->firstOrFail();
+            $check = M_Group::where('id',$id)->firstOrFail();
 
             ActivityLogger::logActivity($req,"Success",200);
             return response()->json(['message' => 'OK',"status" => 200,'response' => $check], 200);
@@ -48,21 +49,21 @@ class MasterRoleController extends Controller
         try {
           
             $request->validate([
-                'role_name' => 'required|string|unique:master_role',
+                'group_name' => 'required|string|unique:master_role',
                 'status' => 'required|string'
             ]);
 
             $validator = [
-                'role_name' =>$request->role_name,
-                'status' =>$request->status,
-                'created_at' =>Carbon::now()->format('Y-m-d'),
-                'created_by' =>$request->user()->id
+                'group_name' => $request->role_name,
+                'status' => $request->status,
+                'created_at' => Carbon::now()->format('Y-m-d'),
+                'created_by' => $request->user()->id
             ];
             
-            M_Role::create($validator);
+            M_Group::create($validator);
 
             DB::commit();
-            return response()->json(['message' => 'Master Role created successfully', "status" => 200], 200);
+            return response()->json(['message' => 'Master Group created successfully', "status" => 200], 200);
         } catch (QueryException $e) {
             DB::rollback();
             ActivityLogger::logActivity($request,$e->getMessage(),409);
@@ -82,7 +83,7 @@ class MasterRoleController extends Controller
                 'role_name' => 'unique:master_role,role_name,'.$id,
             ]);
 
-            $role = M_Role::findOrFail($id);
+            $role = M_Group::findOrFail($id);
 
             $validator = [
                 'role_name' => $request->input('role_name'),
@@ -112,7 +113,7 @@ class MasterRoleController extends Controller
         DB::beginTransaction();
         try {
             
-            $role = M_Role::findOrFail($id);
+            $role = M_Group::findOrFail($id);
 
             $update = [
                 'deleted_by' => $req->user()->id,

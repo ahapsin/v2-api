@@ -16,19 +16,13 @@ use App\Http\Controllers\API\{
     SlikApprovalController,
     SubordinateListController,
     TaskController,
-    TestController,
     TextFileReader,
     UsersController
 };
+use App\Http\Controllers\API\Menu\MasterGroupController;
 use App\Http\Controllers\API\Menu\MasterMenuController;
-use App\Http\Controllers\API\Menu\MasterRoleController;
-use App\Http\Controllers\API\Menu\RoleAccessMenuController;
-use App\Http\Controllers\API\Menu\UserAccessMenuController;
-use App\Http\Controllers\API\Menu\UserAccessRoleController;
 use App\Http\Controllers\Laporan\HistoryAccController;
 use App\Http\Controllers\Laporan\PaymentDumpController;
-use App\Models\M_MasterUserAccessRole;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 //ini dibuah dari luar
@@ -71,10 +65,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
     Route::apiResource('menu', MasterMenuController::class);
     Route::get('menu-sub-list', [MasterMenuController::class, 'menuSubList']);
-    Route::apiResource('role', MasterRoleController::class);
-    Route::apiResource('role_access_menu', RoleAccessMenuController::class);
-    Route::apiResource('user_access_role', UserAccessRoleController::class);
-    Route::apiResource('user_access_menu', UserAccessMenuController::class);
+    Route::apiResource('group', MasterGroupController::class);
 
     //Route Group Master Users
     Route::apiResource('users', UsersController::class);
@@ -102,20 +93,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('credit_type', [CreditTypeController::class, 'index']);
 
     //Route Group Cr Prospek (Kunjungan)
-    Route::get('kunjungan', [CrprospectController::class, 'index']);
-    Route::get('kunjungan/{id}', [CrprospectController::class, 'detail']);
-    Route::post('kunjungan', [CrprospectController::class, 'store']);
-    Route::put('kunjungan/{id}', [CrprospectController::class, 'update']);
-    Route::delete('kunjungan/{id}', [CrprospectController::class, 'destroy']);
+    Route::apiResource('kunjungan', CrprospectController::class);
     Route::post('image_upload_prospect', [CrprospectController::class, 'uploadImage']);
-    Route::post('multi-upload-images', [CrprospectController::class, 'multiImage']);
 
     Route::post('getSpv', [SubordinateListController::class, 'spvSearch']);
     Route::post('getHierarchy', [SubordinateListController::class, 'getHierarchy']);
 
     Route::put('slikSpv', [SlikApprovalController::class, 'approveSpv']);
-
-    // Route::post('text_file', [TextFileReader::class, 'uploadText']);
 });
 
 Route::post('assets', [AssetsController::class, 'storeAsset']);

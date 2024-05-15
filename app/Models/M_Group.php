@@ -6,14 +6,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class M_Role extends Model
+class M_Group extends Model
 {
     use HasFactory;
-    protected $table = 'master_role';
+    protected $table = 'master_group';
 
     protected $fillable = [
         'id',
-        'role_name',
+        'group_name',
         'status',
         'created_by',
         'created_at',

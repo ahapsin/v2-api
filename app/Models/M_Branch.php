@@ -15,6 +15,13 @@ class M_Branch extends Model
         'CODE',
         'NAME',
         'ADDRESS',
+        'RT',
+        'RW',
+        'PROVINCE',
+        'CITY',
+        'KELURAHAN',
+        'KECAMATAN',
+        'ZIP_CODE',
         'LOCATION',
         'PHONE_1',
         'PHONE_2',
@@ -34,6 +41,7 @@ class M_Branch extends Model
     protected $keyType = 'string';
     protected $primaryKey = 'ID';
     public $timestamps = false;
+    
     protected static function boot()
     {
         parent::boot();
