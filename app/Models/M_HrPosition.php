@@ -32,4 +32,14 @@ class M_HrPosition extends Model
             }
         });
     }
+
+    public static function getPositionAccessGroupList($groupId){
+
+       $query =  self::select('hr_position.ID','hr_position.MASTER_NAME')
+                    ->leftJoin('master_position_access_group', 'master_position_access_group.position_id', '=', 'hr_position.ID')
+                    ->where('master_position_access_group.group_id', $groupId)
+                    ->get(); 
+
+        return $query;
+    }
 }

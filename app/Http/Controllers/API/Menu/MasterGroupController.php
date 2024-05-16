@@ -4,11 +4,14 @@ namespace App\Http\Controllers\API\Menu;
 
 use App\Http\Controllers\API\ActivityLogger;
 use App\Http\Controllers\Controller;
+use App\Http\Resources\R_MasterGroup;
 use App\Models\M_Group;
+use App\Models\M_HrPosition;
 use App\Models\M_MasterGroupAccessMenu;
 use App\Models\M_MasterMenu;
 use App\Models\M_MasterPositionAccessGroup;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -20,9 +23,10 @@ class MasterGroupController extends Controller
     {
         try {
             $data = M_Group::all();
+            $dto = R_MasterGroup::collection($data);
         
             ActivityLogger::logActivity($request,"Success",200);
-            return response()->json(['message' => 'OK', "status" => 200, 'response' => $data], 200);
+            return response()->json(['message' => 'OK', "status" => 200, 'response' => $dto], 200);
         } catch (\Exception $e) {
             ActivityLogger::logActivity($request,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
@@ -63,9 +67,13 @@ class MasterGroupController extends Controller
             
             $last_id_group = M_Group::create($validator);
 
-            if ($request->has('position_id')) {
+            if ($request->has('position_id') && !empty($request->position_id)) {
 
-                M_MasterPositionAccessGroup::findOrFail($request->position_id);
+                $check_position = M_HrPosition::where('ID',$request->position_id)->get();
+
+                if ($check_position->isEmpty()) {
+                    throw new Exception("Position Id Not Found",404);
+                }
 
                 $data_id_menu = [
                     'position_id' => $request->position_id,
@@ -80,15 +88,19 @@ class MasterGroupController extends Controller
             if ($request->has('list_menu_id') && is_array($request->list_menu_id)) {
                 foreach ($request->list_menu_id as $value) {
 
-                $menuId= $value['menu_id'];
+                    $menuId= $value['menu_id'];
 
-                M_MasterMenu::findOrFail($menuId);
+                    $check_menu = M_MasterMenu::where('id',$menuId)->get();
 
-                $data_id_menu = [
-                    'master_menu_id' => $menuId,
-                    'master_group_id' => $last_id_group->id,
-                    'created_at' => Carbon::now()->format('Y-m-d'),
-                    'created_by' => $request->user()->id
+                    if ($check_menu->isEmpty()) {
+                        throw new Exception("Menu Id Not Found",404);
+                    }
+
+                    $data_id_menu = [
+                        'master_menu_id' => $menuId,
+                        'master_group_id' => $last_id_group->id,
+                        'created_at' => Carbon::now()->format('Y-m-d'),
+                        'created_by' => $request->user()->id
                     ];
                 
                     M_MasterGroupAccessMenu::create($data_id_menu);
@@ -97,10 +109,6 @@ class MasterGroupController extends Controller
 
             DB::commit();
             return response()->json(['message' => 'Master Group created successfully', "status" => 200], 200);
-        } catch (ModelNotFoundException $e) {
-            DB::rollback();
-            ActivityLogger::logActivity($request,'Menu Id Not Found',404);
-            return response()->json(['message' => 'Menu Id Not Found', "status" => 404], 404);
         }catch (QueryException $e) {
             DB::rollback();
             ActivityLogger::logActivity($request,$e->getMessage(),409);
@@ -117,7 +125,7 @@ class MasterGroupController extends Controller
         DB::beginTransaction();
         try {
             $request->validate([
-                'role_name' => 'unique:master_role,role_name,'.$id,
+                'group_name' => 'unique:master_group,group_name,'.$id,
             ]);
 
             $role = M_Group::findOrFail($id);

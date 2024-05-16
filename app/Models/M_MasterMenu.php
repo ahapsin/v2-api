@@ -145,4 +145,14 @@ class M_MasterMenu extends Model
 
         return $menuItems;
     }
+
+    public static function getGroupAccessMenuList($groupId){
+
+        $query =  self::select('master_menu.id','master_menu.menu_name')
+                     ->leftJoin('master_group_access_menu', 'master_group_access_menu.master_menu_id', '=', 'master_Menu.id')
+                     ->where('master_group_access_menu.master_group_id', $groupId)
+                     ->get(); 
+ 
+         return $query;
+     }
 }

@@ -18,6 +18,7 @@ use App\Http\Controllers\API\{
     SubordinateListController,
     TaskController,
     TextFileReader,
+    UsersAccessMenu,
     UsersController
 };
 use App\Http\Controllers\API\Menu\MasterGroupController;
@@ -67,6 +68,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('menu', MasterMenuController::class);
     Route::get('menu-sub-list', [MasterMenuController::class, 'menuSubList']);
     Route::apiResource('group', MasterGroupController::class);
+    Route::apiResource('user_vs_menu', UsersAccessMenu::class);
 
     //Route Group Master Users
     Route::apiResource('users', UsersController::class);
