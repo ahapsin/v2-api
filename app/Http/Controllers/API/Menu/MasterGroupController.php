@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\M_Group;
 use App\Models\M_MasterGroupAccessMenu;
 use App\Models\M_MasterMenu;
+use App\Models\M_MasterPositionAccessGroup;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
@@ -61,6 +62,20 @@ class MasterGroupController extends Controller
             ];
             
             $last_id_group = M_Group::create($validator);
+
+            if ($request->has('position_id')) {
+
+                M_MasterPositionAccessGroup::findOrFail($request->position_id);
+
+                $data_id_menu = [
+                    'position_id' => $request->position_id,
+                    'group_id' => $last_id_group->id,
+                    'created_at' => Carbon::now()->format('Y-m-d'),
+                    'created_by' => $request->user()->id
+                    ];
+                
+                M_MasterPositionAccessGroup::create($data_id_menu);
+            }
 
             if ($request->has('list_menu_id') && is_array($request->list_menu_id)) {
                 foreach ($request->list_menu_id as $value) {
