@@ -67,6 +67,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
     Route::apiResource('menu', MasterMenuController::class);
     Route::get('menu-sub-list', [MasterMenuController::class, 'menuSubList']);
+    Route::get('list-test', [MasterMenuController::class, 'menuSubListTesting']);
     Route::apiResource('group', MasterGroupController::class);
     Route::apiResource('user_vs_menu', UsersAccessMenu::class);
 

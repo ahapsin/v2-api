@@ -53,6 +53,60 @@ class M_MasterMenu extends Model
         }
     }
 
+    static function buildMenuArrayTest($menuItems)
+    {
+        // Check if there are any items with parent == null
+        $hasParentNull = $menuItems->contains(function ($menuItem) {
+            return $menuItem->parent == 0;
+        });
+
+        if (!$hasParentNull) {
+            return [];
+        }else{
+            $menuArray = [];
+
+            foreach ($menuItems as $menuItem) {
+                if ($menuItem->parent == 0) {
+                    $menuArray[$menuItem->id] = [
+                        'menuid' => $menuItem->id,
+                        'menuitem' => [
+                            'labelmenu' => $menuItem->menu_name,
+                            'routename' => $menuItem->route,
+                            'leading' => explode(',', $menuItem->leading),
+                            'action' => $menuItem->action,
+                            'ability' => $menuItem->ability,
+                            'submenu' => []
+                        ]
+                    ];
+                }
+            }
+            
+            foreach ($menuItems as $menuItem) {
+                if ($menuItem->parent !== null && isset($menuArray[$menuItem->parent])) {
+                    if ($menuItem->id !== null && !isset($menuArray[$menuItem->id])) {
+                        $menuArray[$menuItem->parent]['menuitem']['submenu'][] = [
+                            'subid' => $menuItem->id,
+                            'sublabel' => $menuItem->menu_name,
+                            'subroute' => $menuItem->route,
+                            'leading' => explode(',', $menuItem->leading),
+                            'action' => $menuItem->action,
+                            'ability' => $menuItem->ability
+                        ];
+                    }
+                }
+            }
+            
+            // Filter out items with menuid as null
+            $menuArray = array_filter($menuArray, function($item) {
+                return $item['menuid'] !== null;
+            });
+            
+            // Remove keys and re-index the array
+            return array_values($menuArray);
+            
+        }
+    }
+
 
     static function buildMenuArray($menuItems)
     {
