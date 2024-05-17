@@ -22,11 +22,31 @@ class MasterMenuController extends Controller
                                 ->where(function($query) {
                                     $query->whereNull('deleted_by')
                                         ->orWhere('deleted_by', '');
-                                })->get();
+                                })
+                                ->get();
 
             $dto = R_MasterMenu::collection($data);
 
             ActivityLogger::logActivity($req,"Success",200);
+            return response()->json(['message' => 'OK', "status" => 200, 'response' => $dto], 200);
+        } catch (\Exception $e) {
+            ActivityLogger::logActivity($req,$e->getMessage(),500);
+            return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
+        }
+    }
+
+    public function subMenuList(Request $req)
+    {
+        try {
+            $data = M_MasterMenu::orderBy('order', 'asc')
+                                ->where(function($query) {
+                                    $query->whereNull('deleted_by')
+                                        ->orWhere('deleted_by', '');
+                                })
+                                ->where('parent', '!=', 0)
+                                ->get();
+
+            $dto = R_MasterMenu::collection($data);
             return response()->json(['message' => 'OK', "status" => 200, 'response' => $dto], 200);
         } catch (\Exception $e) {
             ActivityLogger::logActivity($req,$e->getMessage(),500);
@@ -178,7 +198,7 @@ class MasterMenuController extends Controller
         
             return response()->json(['message' => 'OK', "status" => 200, 'response' => M_MasterMenu::buildMenuArrayTest($results)], 200);
         } catch (\Exception $e) {
-            // ActivityLogger::logActivity($req,$e->getMessage(),500);
+            ActivityLogger::logActivity($req,$e->getMessage(),500);
             return response()->json(['message' => $e->getMessage(),"status" => 500], 500);
         }
     }

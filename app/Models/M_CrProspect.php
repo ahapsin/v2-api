@@ -24,12 +24,22 @@ class M_CrProspect extends Model
         'kk',
         'tgl_lahir',
         'alamat',
+        'rt',
+        'rw',
+        'province',
+        'city',
+        'kelurahan',
+        'kecamatan',
+        'zip_code',
         'hp',
         'usaha',
         'sector',
         'coordinate',
         'accurate',
         'slik',
+        'updated_by',
+        'updated_at',
+        'deleted_by',
         'deleted_at'
     ];
     protected $guarded = [];

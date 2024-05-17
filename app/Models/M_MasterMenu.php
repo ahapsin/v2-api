@@ -64,23 +64,27 @@ class M_MasterMenu extends Model
             return [];
         }else{
             $menuArray = [];
-
+            
             foreach ($menuItems as $menuItem) {
-                if ($menuItem->parent == 0) {
-                    $menuArray[$menuItem->id] = [
-                        'menuid' => $menuItem->id,
-                        'menuitem' => [
-                            'labelmenu' => $menuItem->menu_name,
-                            'routename' => $menuItem->route,
-                            'leading' => explode(',', $menuItem->leading),
-                            'action' => $menuItem->action,
-                            'ability' => $menuItem->ability,
-                            'submenu' => []
-                        ]
-                    ];
+                if ($menuItem->parent != 0){
+                    $parent = M_MasterMenu::where(['parent'=>'0','id' => $menuItem->parent])->first();
+
+                    if (!is_null($parent)) {
+                        $menuArray[$parent->id] = [
+                            'menuid' => $parent->id,
+                            'menuitem' => [
+                                'labelmenu' => $parent->menu_name,
+                                'routename' => $parent->route,
+                                'leading' => explode(',', $parent->leading),
+                                'action' => $parent->action,
+                                'ability' => $parent->ability,
+                                'submenu' => []
+                            ]
+                        ];
+                    }
                 }
             }
-            
+
             foreach ($menuItems as $menuItem) {
                 if ($menuItem->parent !== null && isset($menuArray[$menuItem->parent])) {
                     if ($menuItem->id !== null && !isset($menuArray[$menuItem->id])) {
@@ -97,9 +101,9 @@ class M_MasterMenu extends Model
             }
             
             // Filter out items with menuid as null
-            $menuArray = array_filter($menuArray, function($item) {
-                return $item['menuid'] !== null;
-            });
+            // $menuArray = array_filter($menuArray, function($item) {
+            //     return $item['menuid'] !== null;
+            // });
             
             // Remove keys and re-index the array
             return array_values($menuArray);
