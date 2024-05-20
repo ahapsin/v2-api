@@ -151,7 +151,7 @@ class CrprospectController extends Controller
             'data_ao' =>  [
                 [
                     'id_ao' => $request->user()->id,
-                    'nama_ao' => $request->user()->username,
+                    'nama_ao' => M_HrEmployee::findEmployee($request->user()->employee_id)->NAMA,
                 ]
             ],
             'visit_date' => date('d-m-Y',strtotime($data->visit_date)),

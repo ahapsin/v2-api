@@ -84,6 +84,12 @@ class M_HrEmployee extends Model
         
     }
 
+    public static function findEmployee($employeeID){
+
+        $query =self::where('ID', $employeeID)->first();
+        return $query;
+    }
+
     public static function getBranchCode($employeeID){
 
         $code = self::select('branch.CODE as branch_code')

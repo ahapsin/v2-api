@@ -24,7 +24,7 @@ class R_CrProspect extends JsonResource
             'data_ao' =>
                 [
                     'id_ao' => $request->user()->id,
-                    'nama_ao' => $request->user()->username,
+                    'nama_ao' => M_HrEmployee::findEmployee($request->user()->employee_id)->NAMA,
                 ],
             'visit_date' => date('Y-m-d', strtotime($this->visit_date)),
             'nama_debitur' => $this->nama,
