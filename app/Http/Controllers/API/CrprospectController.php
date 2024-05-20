@@ -12,6 +12,7 @@ use App\Models\M_CrProspectPerson;
 use App\Models\M_HrEmployee;
 use App\Models\M_SlikApproval;
 use App\Models\User;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -251,7 +252,8 @@ class CrprospectController extends Controller
         $validator = $request->validate([
             'nama' => 'required|string',
             'hp' => 'required|numeric',
-            'alamat' => 'required|string'
+            'alamat' => 'required|string',
+            'slik' => 'required|numeric'
         ]);
 
         return $validator;
@@ -289,7 +291,7 @@ class CrprospectController extends Controller
     
             DB::commit();
             ActivityLogger::logActivity($request,"Success",200);
-            return response()->json(['message' => 'Kunjungan created successfully',"status" => 200,'response' => $request->all()], 200);
+            return response()->json(['message' => 'Kunjungan created successfully',"status" => 200], 200);
         } catch (QueryException $e) {
             DB::rollback();
             ActivityLogger::logActivity($request,$e->getMessage(),409);
@@ -371,6 +373,7 @@ class CrprospectController extends Controller
     public function update(Request $req, $id)
     {
         DB::beginTransaction();
+        
         try {
             self::_validate($req);
 
@@ -391,7 +394,7 @@ class CrprospectController extends Controller
                 'kecamatan' => $req->kecamatan,
                 'zip_code' => $req->kode_pos,
                 'hp' => $req->hp,
-                'visit_date' => $req->visit_date,
+                'visit_date' => $req->has('visit_date')?$req->visit_date:"2024-02-02",
                 'tujuan_kredit' => $req->tujuan_kredit,
                 'jenis_produk' => $req->jenis_produk,
                 'plafond' => $req->plafond,
