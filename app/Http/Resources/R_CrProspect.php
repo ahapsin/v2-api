@@ -31,7 +31,7 @@ class R_CrProspect extends JsonResource
             'alamat' => $this->alamat,
             'hp' => $this->hp,
             'slik' => $this->slik == "1" ? 'ya':"tidak",
-            'slik_approval' => M_CrProspect::slik_approval($this->id)
+            'slik_approval' => $this->slik == "1" ? M_CrProspect::slik_approval($this->id):[["SLIK_RESULT" => "0:untouched"]]
         ];
 
 
