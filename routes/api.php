@@ -17,6 +17,7 @@ use App\Http\Controllers\API\{
     SlikApprovalController,
     SubordinateListController,
     TaskController,
+    TestController,
     TextFileReader,
     UsersAccessMenu,
     UsersController
@@ -62,6 +63,8 @@ Route::post('createUser', [UsersController::class, 'store']);
 Route::get('approval/{id}', [SlikApprovalController::class, 'index']);
 
 Route::post('text_file', [TextFileReader::class, 'uploadText']);
+
+Route::get('welcome', [TestController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //Route Group Master Menu
