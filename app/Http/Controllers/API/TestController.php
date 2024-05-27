@@ -15,7 +15,7 @@ class TestController extends Controller
         // $userId =Auth::user()->employee_id;
         // $test = self::subOrdinateList($userId);
                 
-        return response()->json(['message' => 'Ok', "status" => 200, 'response' =>  'LIVE'], 200);
+        return response()->json(['message' => 'Ok', "status" => 200, 'response' =>  'development'], 200);
 
     }
 
