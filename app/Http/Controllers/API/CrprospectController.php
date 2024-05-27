@@ -510,7 +510,8 @@ class CrprospectController extends Controller
                 'cr_prospect_id' =>'required|string'
             ]);
 
-            $image_path = $req->file('image')->store('Cr_Prospect');
+            $image_path = $req->file('image')->store('public/Cr_Prospect');
+            $image_path = str_replace('public/', '', $image_path);
 
             $url= URL::to('/') . '/storage/' . $image_path;
 
